@@ -1,0 +1,176 @@
+{
+  "properties": {
+    "connectionReferences": {
+      "shared_sharepointonline-1": {
+        "runtimeSource": "embedded",
+        "connection": {
+          "connectionReferenceLogicalName": "tms_SharePointAdmin"
+        },
+        "api": {
+          "name": "shared_sharepointonline"
+        }
+      }
+    },
+    "definition": {
+      "$schema": "https://schema.management.azure.com/providers/Microsoft.Logic/schemas/2016-06-01/workflowdefinition.json#",
+      "contentVersion": "1.0.0.0",
+      "parameters": {
+        "$authentication": {
+          "defaultValue": {},
+          "type": "SecureObject"
+        },
+        "$connections": {
+          "defaultValue": {},
+          "type": "Object"
+        },
+        "Task Management Site (tms_TaskManagementSite)": {
+          "defaultValue": "https://m365b467805.sharepoint.com/sites/TaskManagement",
+          "type": "String",
+          "metadata": {
+            "schemaName": "tms_TaskManagementSite"
+          }
+        },
+        "Task Scheduler List (tms_TaskSchedulerList)": {
+          "defaultValue": "6dbdadbd-23ec-41bb-af50-fbb402698f34",
+          "type": "String",
+          "metadata": {
+            "schemaName": "tms_TaskSchedulerList"
+          }
+        }
+      },
+      "triggers": {
+        "manual": {
+          "metadata": {
+            "operationMetadataId": "7e7f91e2-77c9-4a60-8a86-61cde6dd9a65"
+          },
+          "type": "Request",
+          "kind": "PowerAppV2",
+          "inputs": {
+            "schema": {
+              "type": "object",
+              "properties": {
+                "number": {
+                  "description": "Please enter a number",
+                  "title": "ID_Task_Scheduler",
+                  "type": "number",
+                  "x-ms-content-hint": "NUMBER",
+                  "x-ms-dynamically-added": true
+                }
+              },
+              "required": [
+                "number"
+              ]
+            }
+          }
+        }
+      },
+      "actions": {
+        "Update_item_-_Task_Scheduler": {
+          "runAfter": {
+            "Get_item_-_Task_Scheduler": [
+              "Succeeded"
+            ]
+          },
+          "type": "OpenApiConnection",
+          "inputs": {
+            "parameters": {
+              "dataset": "@parameters('Task Management Site (tms_TaskManagementSite)')",
+              "table": "@parameters('Task Scheduler List (tms_TaskSchedulerList)')",
+              "id": "@triggerBody()?['number']",
+              "item/start_scheduler": "@outputs('Get_item_-_Task_Scheduler')?['body/start_scheduler']",
+              "item/end_scheduler": "@outputs('Get_item_-_Task_Scheduler')?['body/end_scheduler']",
+              "item/is_active": true
+            },
+            "host": {
+              "apiId": "/providers/Microsoft.PowerApps/apis/shared_sharepointonline",
+              "operationId": "PatchItem",
+              "connectionName": "shared_sharepointonline-1"
+            }
+          }
+        },
+        "Respond_to_a_Power_App_or_flow_-_Canceled": {
+          "runAfter": {
+            "Compose_-_Task_Scheduler_Response": [
+              "Succeeded"
+            ]
+          },
+          "type": "Response",
+          "kind": "PowerApp",
+          "inputs": {
+            "schema": {
+              "type": "object",
+              "properties": {
+                "success": {
+                  "title": "Success",
+                  "type": "boolean",
+                  "x-ms-content-hint": "BOOLEAN",
+                  "x-ms-dynamically-added": true
+                },
+                "taskscheduler": {
+                  "title": "TaskScheduler",
+                  "type": "string",
+                  "x-ms-content-hint": "TEXT",
+                  "x-ms-dynamically-added": true
+                }
+              },
+              "additionalProperties": {}
+            },
+            "statusCode": 200,
+            "body": {
+              "success": true,
+              "taskscheduler": "@{outputs('Compose_-_Task_Scheduler_Response')}"
+            }
+          }
+        },
+        "Get_item_-_Task_Scheduler": {
+          "runAfter": {},
+          "type": "OpenApiConnection",
+          "inputs": {
+            "parameters": {
+              "dataset": "@parameters('Task Management Site (tms_TaskManagementSite)')",
+              "table": "@parameters('Task Scheduler List (tms_TaskSchedulerList)')",
+              "id": "@triggerBody()?['number']"
+            },
+            "host": {
+              "apiId": "/providers/Microsoft.PowerApps/apis/shared_sharepointonline",
+              "operationId": "GetItem",
+              "connectionName": "shared_sharepointonline-1"
+            }
+          }
+        },
+        "Compose_-_Task_Scheduler_Response": {
+          "runAfter": {
+            "Update_item_-_Task_Scheduler": [
+              "Succeeded"
+            ]
+          },
+          "type": "Compose",
+          "inputs": {
+            "ID": "@outputs('Update_item_-_Task_Scheduler')?['body/ID']",
+            "ID_Frequency": "@{outputs('Update_item_-_Task_Scheduler')?['body/ID_Frequency']}",
+            "is_active": "@outputs('Update_item_-_Task_Scheduler')?['body/is_active']",
+            "start_scheduler": "@{outputs('Update_item_-_Task_Scheduler')?['body/start_scheduler']}",
+            "end_scheduler": "@{outputs('Update_item_-_Task_Scheduler')?['body/end_scheduler']}",
+            "last_running": "@{outputs('Update_item_-_Task_Scheduler')?['body/last_running']}",
+            "next_running": "@{outputs('Update_item_-_Task_Scheduler')?['body/next_running']}",
+            "estimated_duration": "@outputs('Update_item_-_Task_Scheduler')?['body/estimated_duration']",
+            "use_month_suffix": "@outputs('Update_item_-_Task_Scheduler')?['body/use_month_suffix']",
+            "use_year_suffix": "@outputs('Update_item_-_Task_Scheduler')?['body/use_year_suffix']",
+            "Created": "@{outputs('Update_item_-_Task_Scheduler')?['body/Created']}",
+            "Modified": "@{outputs('Update_item_-_Task_Scheduler')?['body/Modified']}",
+            "ID_User_TS_Created_By": "@{outputs('Update_item_-_Task_Scheduler')?['body/ID_User_TS_Created_By']}",
+            "ID_Parent_Lookup": "@{outputs('Update_item_-_Task_Scheduler')?['body/ID_Parent_Lookup']}",
+            "ID_GrandParent_Lookup": "@{outputs('Update_item_-_Task_Scheduler')?['body/ID_GrandParent_Lookup']}",
+            "task_name": "@{outputs('Update_item_-_Task_Scheduler')?['body/task_name']}",
+            "task_description": "@{outputs('Update_item_-_Task_Scheduler')?['body/task_description']}",
+            "ID_Priority": "@{outputs('Update_item_-_Task_Scheduler')?['body/ID_Priority']}",
+            "task_scheduler_name": "@{outputs('Update_item_-_Task_Scheduler')?['body/task_scheduler_name']}",
+            "reminder_before": "@outputs('Update_item_-_Task_Scheduler')?['body/reminder_before']"
+          }
+        }
+      }
+    },
+    "templateName": null
+  },
+  "schemaVersion": "1.0.0.0"
+}

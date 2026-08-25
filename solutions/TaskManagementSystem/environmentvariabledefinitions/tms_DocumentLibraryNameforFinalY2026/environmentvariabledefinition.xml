@@ -1,0 +1,11 @@
+<environmentvariabledefinition schemaname="tms_DocumentLibraryNameforFinalY2026">
+  <defaultvalue>Final Y2026</defaultvalue>
+  <displayname default="Document Library Name for Final">
+    <label description="Document Library Name for Final" languagecode="1033" />
+  </displayname>
+  <introducedversion>1.0.0.26</introducedversion>
+  <iscustomizable>1</iscustomizable>
+  <isrequired>0</isrequired>
+  <secretstore>0</secretstore>
+  <type>100000000</type>
+</environmentvariabledefinition>

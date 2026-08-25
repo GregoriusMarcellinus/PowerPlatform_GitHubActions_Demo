@@ -1,0 +1,304 @@
+{
+  "properties": {
+    "connectionReferences": {
+      "shared_sharepointonline-1": {
+        "runtimeSource": "embedded",
+        "connection": {
+          "connectionReferenceLogicalName": "tms_SharePointAdmin"
+        },
+        "api": {
+          "name": "shared_sharepointonline"
+        }
+      }
+    },
+    "definition": {
+      "$schema": "https://schema.management.azure.com/providers/Microsoft.Logic/schemas/2016-06-01/workflowdefinition.json#",
+      "contentVersion": "1.0.0.0",
+      "parameters": {
+        "$authentication": {
+          "defaultValue": {},
+          "type": "SecureObject"
+        },
+        "$connections": {
+          "defaultValue": {},
+          "type": "Object"
+        },
+        "Task List (tms_TaskList)": {
+          "defaultValue": "2b09fc89-2c29-499b-bca9-cd2d764eaf3a",
+          "type": "String",
+          "metadata": {
+            "schemaName": "tms_TaskList"
+          }
+        },
+        "Approval List (tms_ApprovalList)": {
+          "defaultValue": "ad84ee0b-4df9-49ac-965f-7abadfff85f9",
+          "type": "String",
+          "metadata": {
+            "schemaName": "tms_ApprovalList"
+          }
+        },
+        "Task Management Site (tms_TaskManagementSite)": {
+          "defaultValue": "https://m365b467805.sharepoint.com/sites/TaskManagement",
+          "type": "String",
+          "metadata": {
+            "schemaName": "tms_TaskManagementSite"
+          }
+        }
+      },
+      "triggers": {
+        "manual": {
+          "metadata": {
+            "operationMetadataId": "49d761b2-2a8f-46f0-9eae-110f3b53ca99"
+          },
+          "type": "Request",
+          "kind": "PowerAppV2",
+          "inputs": {
+            "schema": {
+              "type": "object",
+              "properties": {
+                "number_1": {
+                  "description": "Please enter a number",
+                  "title": "ID_Task",
+                  "type": "number",
+                  "x-ms-content-hint": "NUMBER",
+                  "x-ms-dynamically-added": true
+                },
+                "text": {
+                  "description": "Please enter your input",
+                  "title": "ApprovalType",
+                  "type": "string",
+                  "x-ms-content-hint": "TEXT",
+                  "x-ms-dynamically-added": true
+                },
+                "text_1": {
+                  "description": "Please enter your input",
+                  "title": "ApprovalRule",
+                  "type": "string",
+                  "x-ms-content-hint": "TEXT",
+                  "x-ms-dynamically-added": true
+                },
+                "text_2": {
+                  "description": "Please enter your input",
+                  "title": "JSON",
+                  "type": "string",
+                  "x-ms-content-hint": "TEXT",
+                  "x-ms-dynamically-added": true
+                }
+              },
+              "required": [
+                "number_1",
+                "text",
+                "text_1",
+                "text_2"
+              ]
+            }
+          }
+        }
+      },
+      "actions": {
+        "Respond_to_a_Power_App_or_flow": {
+          "runAfter": {
+            "Compose_-_Task_Response": [
+              "Succeeded"
+            ]
+          },
+          "type": "Response",
+          "kind": "PowerApp",
+          "inputs": {
+            "schema": {
+              "type": "object",
+              "properties": {
+                "success": {
+                  "title": "Success",
+                  "type": "boolean",
+                  "x-ms-content-hint": "BOOLEAN",
+                  "x-ms-dynamically-added": true
+                },
+                "task": {
+                  "title": "Task",
+                  "type": "string",
+                  "x-ms-content-hint": "TEXT",
+                  "x-ms-dynamically-added": true
+                }
+              },
+              "additionalProperties": {}
+            },
+            "statusCode": 200,
+            "body": {
+              "success": true,
+              "task": "@{outputs('Compose_-_Task_Response')}"
+            }
+          }
+        },
+        "Parse_JSON": {
+          "runAfter": {},
+          "type": "ParseJson",
+          "inputs": {
+            "content": "@triggerBody()?['text_2']",
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "ID": {
+                    "type": "integer"
+                  },
+                  "ID_Task": {
+                    "type": "integer"
+                  },
+                  "ID_User_Approver": {
+                    "type": "object",
+                    "properties": {
+                      "ID": {
+                        "type": "integer"
+                      },
+                      "Value": {
+                        "type": "string"
+                      }
+                    }
+                  },
+                  "approval_level": {
+                    "type": "integer"
+                  },
+                  "approval_status": {
+                    "type": [
+                      "string",
+                      "null"
+                    ]
+                  },
+                  "approved_at": {
+                    "type": [
+                      "string",
+                      "null"
+                    ]
+                  },
+                  "note_by_approver": {
+                    "type": [
+                      "string",
+                      "null"
+                    ]
+                  },
+                  "note_by_requestor": {
+                    "type": [
+                      "string",
+                      "null"
+                    ]
+                  },
+                  "requested_at": {
+                    "type": [
+                      "string",
+                      "null"
+                    ]
+                  }
+                },
+                "required": [
+                  "ID",
+                  "ID_Task",
+                  "ID_User_Approver",
+                  "approval_level"
+                ]
+              }
+            }
+          }
+        },
+        "For_each": {
+          "foreach": "@outputs('Parse_JSON')['body']",
+          "actions": {
+            "Create_item": {
+              "type": "OpenApiConnection",
+              "inputs": {
+                "parameters": {
+                  "dataset": "@parameters('Task Management Site (tms_TaskManagementSite)')",
+                  "table": "@parameters('Approval List (tms_ApprovalList)')",
+                  "item/ID_Task/Id": "@items('For_each')?['ID_Task']",
+                  "item/ID_User_Approver/Id": "@items('For_each')?['ID_User_Approver/Id']",
+                  "item/approval_status": "Waiting",
+                  "item/approval_level": "@if(\r\n    equals(outputs('Update_item_-_Task')?['body/approval_type'], 'Parallel'),\r\n    1,\r\n    int(items('For_each')?['approval_level'])\r\n)",
+                  "item/is_current": false
+                },
+                "host": {
+                  "apiId": "/providers/Microsoft.PowerApps/apis/shared_sharepointonline",
+                  "operationId": "PostItem",
+                  "connectionName": "shared_sharepointonline-1"
+                }
+              }
+            }
+          },
+          "runAfter": {
+            "Parse_JSON": [
+              "Succeeded"
+            ],
+            "Update_item_-_Task": [
+              "Succeeded"
+            ]
+          },
+          "type": "Foreach",
+          "runtimeConfiguration": {
+            "concurrency": {
+              "repetitions": 5
+            }
+          }
+        },
+        "Update_item_-_Task": {
+          "runAfter": {},
+          "type": "OpenApiConnection",
+          "inputs": {
+            "parameters": {
+              "dataset": "@parameters('Task Management Site (tms_TaskManagementSite)')",
+              "table": "@parameters('Task List (tms_TaskList)')",
+              "id": "@triggerBody()?['number_1']",
+              "item/approval_type": "@triggerBody()?['text']",
+              "item/approval_rule": "@if(\n  equals(triggerBody()?['text_1'],'na'),\n  '',\n  triggerBody()?['text_1']\n)"
+            },
+            "host": {
+              "apiId": "/providers/Microsoft.PowerApps/apis/shared_sharepointonline",
+              "operationId": "PatchItem",
+              "connectionName": "shared_sharepointonline-1"
+            }
+          }
+        },
+        "Compose_-_Task_Response": {
+          "runAfter": {
+            "For_each": [
+              "Succeeded"
+            ]
+          },
+          "type": "Compose",
+          "inputs": {
+            "ID": "@{outputs('Update_item_-_Task')?['body/ID']}",
+            "task_level": "@{outputs('Update_item_-_Task')?['body/task_level']}",
+            "task_name": "@{outputs('Update_item_-_Task')?['body/task_name']}",
+            "ID_GrandParent_Lookup": "@{outputs('Update_item_-_Task')?['body/ID_GrandParent_Lookup']}",
+            "ID_Parent_Lookup": "@{outputs('Update_item_-_Task')?['body/ID_Parent_Lookup']}",
+            "ID_Priority": "@{outputs('Update_item_-_Task')?['body/ID_Priority']}",
+            "task_description": "@{outputs('Update_item_-_Task')?['body/task_description']}",
+            "plan_start_date": "@{outputs('Update_item_-_Task')?['body/plan_start_date']}",
+            "plan_finish_date": "@{outputs('Update_item_-_Task')?['body/plan_finish_date']}",
+            "is_task": "@outputs('Update_item_-_Task')?['body/is_task']",
+            "ID_Status": "@{outputs('Update_item_-_Task')?['body/ID_Status']}",
+            "ID_User_Task_Created_By": "@{outputs('Update_item_-_Task')?['body/ID_User_Task_Created_By']}",
+            "Created": "@{outputs('Update_item_-_Task')?['body/Created']}",
+            "actual_start_date": "@{outputs('Update_item_-_Task')?['body/actual_start_date']}",
+            "actual_finish_date": "@{outputs('Update_item_-_Task')?['body/actual_finish_date']}",
+            "completion_date": "@{outputs('Update_item_-_Task')?['body/completion_date']}",
+            "ID_User_Task_Started_By": "@{outputs('Update_item_-_Task')?['body/ID_User_Task_Started_By']}",
+            "ID_Parent_Lookup_plan_start_date": "@{outputs('Update_item_-_Task')?['body/ID_Parent_Lookup_x003a__x0020_pl']}",
+            "ID_Parent_Lookup_plan_finish_date": "@{outputs('Update_item_-_Task')?['body/ID_Parent_Lookup_x003a__x0020_pl0']}",
+            "ID_Parent_Lookup_actual_start_date": "@{outputs('Update_item_-_Task')?['body/ID_Parent_Lookup_x003a__x0020_ac']}",
+            "ID_Parent_Lookup_actual_finish_date": "@{outputs('Update_item_-_Task')?['body/ID_Parent_Lookup_x003a__x0020_ac0']}",
+            "ID_Parent_Lookup_completion_date": "@{outputs('Update_item_-_Task')?['body/ID_Parent_Lookup_x003a__x0020_co']}",
+            "ID_Task_Scheduler": "@{outputs('Update_item_-_Task')?['body/ID_Task_Scheduler']}",
+            "reminder_date": "@{outputs('Update_item_-_Task')?['body/reminder_date']}",
+            "Modified": "@{outputs('Update_item_-_Task')?['body/Modified']}",
+            "approval_type": "@{outputs('Update_item_-_Task')?['body/approval_type']}",
+            "approval_rule": "@{outputs('Update_item_-_Task')?['body/approval_rule']}",
+            "ID_User_Task_Finished_By": "@{outputs('Update_item_-_Task')?['body/ID_User_Task_Finished_By']}",
+            "task_duration": "@{outputs('Update_item_-_Task')?['body/task_duration']}"
+          }
+        }
+      }
+    },
+    "templateName": null
+  },
+  "schemaVersion": "1.0.0.0"
+}

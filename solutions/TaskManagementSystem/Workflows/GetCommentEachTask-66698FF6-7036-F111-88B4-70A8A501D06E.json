@@ -1,0 +1,137 @@
+{
+  "properties": {
+    "connectionReferences": {
+      "shared_sharepointonline-1": {
+        "runtimeSource": "embedded",
+        "connection": {
+          "connectionReferenceLogicalName": "tms_SharePointAdmin"
+        },
+        "api": {
+          "name": "shared_sharepointonline"
+        }
+      }
+    },
+    "definition": {
+      "$schema": "https://schema.management.azure.com/providers/Microsoft.Logic/schemas/2016-06-01/workflowdefinition.json#",
+      "contentVersion": "1.0.0.0",
+      "parameters": {
+        "$authentication": {
+          "defaultValue": {},
+          "type": "SecureObject"
+        },
+        "$connections": {
+          "defaultValue": {},
+          "type": "Object"
+        },
+        "Task Management Site (tms_TaskManagementSite)": {
+          "defaultValue": "https://m365b467805.sharepoint.com/sites/TaskManagement",
+          "type": "String",
+          "metadata": {
+            "schemaName": "tms_TaskManagementSite"
+          }
+        },
+        "Comment List (tms_CommentList)": {
+          "defaultValue": "2b2af842-5948-4f79-9851-52c7c4b07c94",
+          "type": "String",
+          "metadata": {
+            "schemaName": "tms_CommentList"
+          }
+        }
+      },
+      "triggers": {
+        "manual": {
+          "metadata": {
+            "operationMetadataId": "ae14d66e-468b-45d1-b9e8-aeadf593cefb"
+          },
+          "type": "Request",
+          "kind": "PowerAppV2",
+          "inputs": {
+            "schema": {
+              "type": "object",
+              "properties": {
+                "number": {
+                  "title": "ID_Task",
+                  "type": "number",
+                  "x-ms-dynamically-added": true,
+                  "description": "Please enter a number",
+                  "x-ms-content-hint": "NUMBER"
+                }
+              },
+              "required": [
+                "number"
+              ]
+            }
+          }
+        }
+      },
+      "actions": {
+        "Get_items_-_Comment_SharePoint_Lists": {
+          "runAfter": {},
+          "metadata": {
+            "operationMetadataId": "3e935faa-c71b-4b68-8714-16ad6e4125ba"
+          },
+          "type": "OpenApiConnection",
+          "inputs": {
+            "parameters": {
+              "dataset": "@parameters('Task Management Site (tms_TaskManagementSite)')",
+              "table": "@parameters('Comment List (tms_CommentList)')",
+              "$filter": "ID_Task eq @{triggerBody()?['number']}"
+            },
+            "host": {
+              "apiId": "/providers/Microsoft.PowerApps/apis/shared_sharepointonline",
+              "operationId": "GetItems",
+              "connectionName": "shared_sharepointonline-1"
+            }
+          }
+        },
+        "Respond_to_a_Power_App_or_flow": {
+          "runAfter": {
+            "Select": [
+              "Succeeded"
+            ]
+          },
+          "type": "Response",
+          "kind": "PowerApp",
+          "inputs": {
+            "schema": {
+              "type": "object",
+              "properties": {
+                "value": {
+                  "title": "Value",
+                  "type": "string",
+                  "x-ms-content-hint": "TEXT",
+                  "x-ms-dynamically-added": true
+                }
+              },
+              "additionalProperties": {}
+            },
+            "statusCode": 200,
+            "body": {
+              "value": "@{string(body('Select'))}"
+            }
+          }
+        },
+        "Select": {
+          "runAfter": {
+            "Get_items_-_Comment_SharePoint_Lists": [
+              "Succeeded"
+            ]
+          },
+          "type": "Select",
+          "inputs": {
+            "from": "@outputs('Get_items_-_Comment_SharePoint_Lists')?['body/value']",
+            "select": {
+              "ID": "@item()?['ID']",
+              "comment": "@item()?['comment']",
+              "ID_User_Comment_By": "@item()?['comment_by']",
+              "Created": "@item()?['Created']",
+              "ID_Task": "@item()?['ID_Task']"
+            }
+          }
+        }
+      }
+    },
+    "templateName": null
+  },
+  "schemaVersion": "1.0.0.0"
+}

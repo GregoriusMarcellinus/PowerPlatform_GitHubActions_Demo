@@ -1,0 +1,776 @@
+{
+  "properties": {
+    "connectionReferences": {
+      "shared_sharepointonline-1": {
+        "runtimeSource": "embedded",
+        "connection": {
+          "connectionReferenceLogicalName": "tms_SharePointAdmin"
+        },
+        "api": {
+          "name": "shared_sharepointonline"
+        }
+      }
+    },
+    "definition": {
+      "$schema": "https://schema.management.azure.com/providers/Microsoft.Logic/schemas/2016-06-01/workflowdefinition.json#",
+      "contentVersion": "1.0.0.0",
+      "parameters": {
+        "$authentication": {
+          "defaultValue": {},
+          "type": "SecureObject"
+        },
+        "$connections": {
+          "defaultValue": {},
+          "type": "Object"
+        },
+        "Task Management Site (tms_TaskManagementSite)": {
+          "defaultValue": "https://m365b467805.sharepoint.com/sites/TaskManagement",
+          "type": "String",
+          "metadata": {
+            "schemaName": "tms_TaskManagementSite"
+          }
+        },
+        "Task List (tms_TaskList)": {
+          "defaultValue": "2b09fc89-2c29-499b-bca9-cd2d764eaf3a",
+          "type": "String",
+          "metadata": {
+            "schemaName": "tms_TaskList"
+          }
+        },
+        "Frequency List (tms_FrequencyList)": {
+          "defaultValue": "774a69ab-3302-48e5-a54d-8a160422083b",
+          "type": "String",
+          "metadata": {
+            "schemaName": "tms_FrequencyList"
+          }
+        },
+        "Task Assigned To Division List (tms_TaskAssignedToDivisionList)": {
+          "defaultValue": "e59fc654-0a6c-469d-9edb-10b069db7077",
+          "type": "String",
+          "metadata": {
+            "schemaName": "tms_TaskAssignedToDivisionList"
+          }
+        },
+        "Task Assigned To Person List (tms_TaskAssignedToPersonList)": {
+          "defaultValue": "14f77253-8e43-4f56-9f1e-6e6b0ba1fb23",
+          "type": "String",
+          "metadata": {
+            "schemaName": "tms_TaskAssignedToPersonList"
+          }
+        },
+        "Task Scheduler List (tms_TaskSchedulerList)": {
+          "defaultValue": "6dbdadbd-23ec-41bb-af50-fbb402698f34",
+          "type": "String",
+          "metadata": {
+            "schemaName": "tms_TaskSchedulerList"
+          }
+        },
+        "User List (tms_UserList)": {
+          "defaultValue": "b0e71eeb-dcac-48d0-81f5-e6fe08e70a16",
+          "type": "String",
+          "metadata": {
+            "schemaName": "tms_UserList"
+          }
+        },
+        "Working Y2026 Document Library (tms_WorkingY2026DocumentLibrary)": {
+          "defaultValue": "7c1dfcae-9cee-4558-a4a1-47615324c546",
+          "type": "String",
+          "metadata": {
+            "schemaName": "tms_WorkingY2026DocumentLibrary"
+          }
+        },
+        "Task Scheduler Reference Document Library (tms_TaskSchedulerReferenceDocumentLibrary)": {
+          "defaultValue": "c85dd586-b0b4-416e-b9e1-4ef2387f1238",
+          "type": "String",
+          "metadata": {
+            "schemaName": "tms_TaskSchedulerReferenceDocumentLibrary"
+          }
+        },
+        "Executive Task Site (tms_ExecutiveTaskSite)": {
+          "defaultValue": "https://m365b467805.sharepoint.com/sites/ExecutiveTask",
+          "type": "String",
+          "metadata": {
+            "schemaName": "tms_ExecutiveTaskSite"
+          }
+        },
+        "Executive Task Scheduler Reference Document Library (tms_ExecutiveTaskSchedulerReferenceDocumentLibrary)": {
+          "defaultValue": "487c6326-2ebb-42b1-8295-aa0da85a48ce",
+          "type": "String",
+          "metadata": {
+            "schemaName": "tms_ExecutiveTaskSchedulerReferenceDocumentLibrary"
+          }
+        },
+        "Executive Working Y2026 Document Library (tms_ExecutiveWorkingY2026DocumentLibrary)": {
+          "defaultValue": "f69588e1-3e9f-42eb-ae92-a653c6a746ce",
+          "type": "String",
+          "metadata": {
+            "schemaName": "tms_ExecutiveWorkingY2026DocumentLibrary"
+          }
+        },
+        "Document Library Name for Executive Working (tms_DocumentLibraryNameforExecutiveWorking)": {
+          "defaultValue": "Executive Working Y2026",
+          "type": "String",
+          "metadata": {
+            "schemaName": "tms_DocumentLibraryNameforExecutiveWorking"
+          }
+        },
+        "Document Library Name for Working (tms_DocumentLibraryNameforWorking)": {
+          "defaultValue": "Working Y2026",
+          "type": "String",
+          "metadata": {
+            "schemaName": "tms_DocumentLibraryNameforWorking"
+          }
+        }
+      },
+      "triggers": {
+        "Recurrence": {
+          "recurrence": {
+            "frequency": "Day",
+            "interval": 1,
+            "startTime": "2026-06-06T17:00:00Z",
+            "timeZone": "SE Asia Standard Time",
+            "schedule": {
+              "hours": [
+                "7"
+              ],
+              "minutes": [
+                0
+              ]
+            }
+          },
+          "metadata": {
+            "operationMetadataId": "81bec574-f439-47f3-a347-47bfb59b38ad"
+          },
+          "type": "Recurrence"
+        }
+      },
+      "actions": {
+        "Get_items": {
+          "runAfter": {},
+          "type": "OpenApiConnection",
+          "inputs": {
+            "parameters": {
+              "dataset": "@parameters('Task Management Site (tms_TaskManagementSite)')",
+              "table": "@parameters('Task Scheduler List (tms_TaskSchedulerList)')",
+              "$filter": "is_active eq 1 and next_running le '@{utcNow('yyyy-MM-dd')}'"
+            },
+            "host": {
+              "apiId": "/providers/Microsoft.PowerApps/apis/shared_sharepointonline",
+              "operationId": "GetItems",
+              "connectionName": "shared_sharepointonline-1"
+            }
+          }
+        },
+        "Apply_to_each": {
+          "foreach": "@outputs('Get_items')?['body/value']",
+          "actions": {
+            "Get_items_-_All_Assigned_Division": {
+              "type": "OpenApiConnection",
+              "inputs": {
+                "parameters": {
+                  "dataset": "@parameters('Task Management Site (tms_TaskManagementSite)')",
+                  "table": "@parameters('Task Assigned To Division List (tms_TaskAssignedToDivisionList)')",
+                  "$filter": "ID_Task_Scheduler eq @{items('Apply_to_each')?['ID']}"
+                },
+                "host": {
+                  "apiId": "/providers/Microsoft.PowerApps/apis/shared_sharepointonline",
+                  "operationId": "GetItems",
+                  "connectionName": "shared_sharepointonline-1"
+                }
+              }
+            },
+            "Get_items_-_All_Assigned_Person": {
+              "type": "OpenApiConnection",
+              "inputs": {
+                "parameters": {
+                  "dataset": "@parameters('Task Management Site (tms_TaskManagementSite)')",
+                  "table": "@parameters('Task Assigned To Person List (tms_TaskAssignedToPersonList)')",
+                  "$filter": "ID_Task_Scheduler eq @{items('Apply_to_each')?['ID']}"
+                },
+                "host": {
+                  "apiId": "/providers/Microsoft.PowerApps/apis/shared_sharepointonline",
+                  "operationId": "GetItems",
+                  "connectionName": "shared_sharepointonline-1"
+                }
+              }
+            },
+            "Create_item_-_Task_List": {
+              "runAfter": {
+                "Condition_-_Do_Not_Have_Parent": [
+                  "Succeeded"
+                ]
+              },
+              "type": "OpenApiConnection",
+              "inputs": {
+                "parameters": {
+                  "dataset": "@parameters('Task Management Site (tms_TaskManagementSite)')",
+                  "table": "@parameters('Task List (tms_TaskList)')",
+                  "item/ID_Parent_Lookup/Id": "@items('Apply_to_each')?['ID_Parent_Lookup/Id']",
+                  "item/ID_Parent_Number": "@items('Apply_to_each')?['ID_Parent_Lookup/Id']",
+                  "item/ID_GrandParent_Lookup/Id": "@items('Apply_to_each')?['ID_GrandParent_Lookup/Id']",
+                  "item/ID_GrandParent_Number": "@items('Apply_to_each')?['ID_GrandParent_Lookup/Id']",
+                  "item/task_level": "@add(\n    int(coalesce(outputs('Get_item_-_Parent_Task')?['body/task_level'], 0)),\n    1\n)",
+                  "item/is_task": true,
+                  "item/task_name": "@concat(\n    items('Apply_to_each')?['task_name'],\n    if(\n        or(\n            equals(items('Apply_to_each')?['use_month_suffix'], true),\n            equals(items('Apply_to_each')?['use_year_suffix'], true)\n        ),\n        concat(\n            ' - ',\n            if(\n                equals(items('Apply_to_each')?['use_month_suffix'], true),\n                formatDateTime(utcNow(), 'MMM'),\n                ''\n            ),\n            if(\n                and(\n                    equals(items('Apply_to_each')?['use_month_suffix'], true),\n                    equals(items('Apply_to_each')?['use_year_suffix'], true)\n                ),\n                ' ',\n                ''\n            ),\n            if(\n                equals(items('Apply_to_each')?['use_year_suffix'], true),\n                formatDateTime(utcNow(), 'yyyy'),\n                ''\n            )\n        ),\n        ''\n    )\n)",
+                  "item/task_description": "<p class=\"editor-paragraph\">@{items('Apply_to_each')?['task_description']}</p>",
+                  "item/ID_Priority/Id": "@items('Apply_to_each')?['ID_Priority/Id']",
+                  "item/plan_start_date": "@items('Apply_to_each')?['next_running']",
+                  "item/plan_finish_date": "@addDays(\r\n    items('Apply_to_each')?['next_running'],\r\n    int(items('Apply_to_each')?['estimated_duration']),\r\n    'yyyy-MM-dd'\r\n)",
+                  "item/ID_Status/Id": 1,
+                  "item/ID_User_Task_Created_By/Id": "@items('Apply_to_each')?['ID_User_TS_Created_By/Id']",
+                  "item/ID_Task_Scheduler/Id": "@items('Apply_to_each')?['ID']",
+                  "item/reminder_date": "@if(\n    equals(items('Apply_to_each')?['reminder_before'], null),\n    null,\n    addDays(\n        addDays(\n            items('Apply_to_each')?['next_running'],\n            int(items('Apply_to_each')?['estimated_duration'])\n        ),\n        sub(0, int(items('Apply_to_each')?['reminder_before'])),\n        'yyyy-MM-dd'\n    )\n)",
+                  "item/task_duration": "@int(items('Apply_to_each')?['estimated_duration'])"
+                },
+                "host": {
+                  "apiId": "/providers/Microsoft.PowerApps/apis/shared_sharepointonline",
+                  "operationId": "PostItem",
+                  "connectionName": "shared_sharepointonline-1"
+                }
+              }
+            },
+            "For_each": {
+              "foreach": "@outputs('Get_items_-_All_Assigned_Division')?['body/value']",
+              "actions": {
+                "Create_item_-_Task_Assigned_to_Division_List": {
+                  "type": "OpenApiConnection",
+                  "inputs": {
+                    "parameters": {
+                      "dataset": "@parameters('Task Management Site (tms_TaskManagementSite)')",
+                      "table": "@parameters('Task Assigned To Division List (tms_TaskAssignedToDivisionList)')",
+                      "item/ID_Division/Id": "@items('For_each')?['ID_Division/Id']",
+                      "item/ID_Task/Id": "@outputs('Create_item_-_Task_List')?['body/ID']"
+                    },
+                    "host": {
+                      "apiId": "/providers/Microsoft.PowerApps/apis/shared_sharepointonline",
+                      "operationId": "PostItem",
+                      "connectionName": "shared_sharepointonline-1"
+                    }
+                  }
+                }
+              },
+              "runAfter": {
+                "Get_items_-_All_Assigned_Division": [
+                  "Succeeded"
+                ],
+                "Create_item_-_Task_List": [
+                  "Succeeded"
+                ]
+              },
+              "type": "Foreach",
+              "runtimeConfiguration": {
+                "concurrency": {
+                  "repetitions": 5
+                }
+              }
+            },
+            "For_each_1": {
+              "foreach": "@outputs('Get_items_-_All_Assigned_Person')?['body/value']",
+              "actions": {
+                "Create_item_-_Task_Assigned_to_Person_List": {
+                  "type": "OpenApiConnection",
+                  "inputs": {
+                    "parameters": {
+                      "dataset": "@parameters('Task Management Site (tms_TaskManagementSite)')",
+                      "table": "@parameters('Task Assigned To Person List (tms_TaskAssignedToPersonList)')",
+                      "item/ID_User/Id": "@items('For_each_1')?['ID_User/Id']",
+                      "item/ID_Task/Id": "@outputs('Create_item_-_Task_List')?['body/ID']"
+                    },
+                    "host": {
+                      "apiId": "/providers/Microsoft.PowerApps/apis/shared_sharepointonline",
+                      "operationId": "PostItem",
+                      "connectionName": "shared_sharepointonline-1"
+                    }
+                  }
+                }
+              },
+              "runAfter": {
+                "Get_items_-_All_Assigned_Person": [
+                  "Succeeded"
+                ],
+                "Create_item_-_Task_List": [
+                  "Succeeded"
+                ]
+              },
+              "type": "Foreach"
+            },
+            "Get_item_-_Frequency_List": {
+              "runAfter": {
+                "For_each": [
+                  "Succeeded"
+                ],
+                "For_each_1": [
+                  "Succeeded"
+                ],
+                "Condition_-_Is_CEO_Task": [
+                  "Succeeded"
+                ]
+              },
+              "type": "OpenApiConnection",
+              "inputs": {
+                "parameters": {
+                  "dataset": "@parameters('Task Management Site (tms_TaskManagementSite)')",
+                  "table": "@parameters('Frequency List (tms_FrequencyList)')",
+                  "id": "@items('Apply_to_each')?['ID_Frequency/Id']"
+                },
+                "host": {
+                  "apiId": "/providers/Microsoft.PowerApps/apis/shared_sharepointonline",
+                  "operationId": "GetItem",
+                  "connectionName": "shared_sharepointonline-1"
+                }
+              }
+            },
+            "Compose_-_Next_Running": {
+              "runAfter": {
+                "Get_item_-_Frequency_List": [
+                  "Succeeded"
+                ]
+              },
+              "type": "Compose",
+              "inputs": "@if(\r\n    equals(\r\n        toLower(outputs('Get_item_-_Frequency_List')?['body/unit']),\r\n        'day'\r\n    ),\r\n    addDays(\r\n        items('Apply_to_each')?['next_running'],\r\n        int(outputs('Get_item_-_Frequency_List')?['body/interval'])\r\n    ),\r\n    if(\r\n        equals(\r\n            toLower(outputs('Get_item_-_Frequency_List')?['body/unit']),\r\n            'week'\r\n        ),\r\n        addDays(\r\n            items('Apply_to_each')?['next_running'],\r\n            mul(\r\n                int(outputs('Get_item_-_Frequency_List')?['body/interval']),\r\n                7\r\n            )\r\n        ),\r\n        if(\r\n            equals(\r\n                toLower(outputs('Get_item_-_Frequency_List')?['body/unit']),\r\n                'month'\r\n            ),\r\n            addToTime(\r\n                items('Apply_to_each')?['next_running'],\r\n                int(outputs('Get_item_-_Frequency_List')?['body/interval']),\r\n                'Month'\r\n            ),\r\n            addToTime(\r\n                items('Apply_to_each')?['next_running'],\r\n                int(outputs('Get_item_-_Frequency_List')?['body/interval']),\r\n                'Year'\r\n            )\r\n        )\r\n    )\r\n)"
+            },
+            "Condition": {
+              "actions": {
+                "Update_item_-_Still_Active": {
+                  "type": "OpenApiConnection",
+                  "inputs": {
+                    "parameters": {
+                      "dataset": "@parameters('Task Management Site (tms_TaskManagementSite)')",
+                      "table": "@parameters('Task Scheduler List (tms_TaskSchedulerList)')",
+                      "id": "@items('Apply_to_each')?['ID']",
+                      "item/start_scheduler": "@items('Apply_to_each')?['start_scheduler']",
+                      "item/end_scheduler": "@items('Apply_to_each')?['end_scheduler']",
+                      "item/is_active": true,
+                      "item/last_running": "@items('Apply_to_each')?['next_running']",
+                      "item/next_running": "@outputs('Compose_-_Next_Running')"
+                    },
+                    "host": {
+                      "apiId": "/providers/Microsoft.PowerApps/apis/shared_sharepointonline",
+                      "operationId": "PatchItem",
+                      "connectionName": "shared_sharepointonline-1"
+                    }
+                  }
+                }
+              },
+              "runAfter": {
+                "Compose_-_Next_Running": [
+                  "Succeeded"
+                ]
+              },
+              "else": {
+                "actions": {
+                  "Update_item_-_Not_Active": {
+                    "type": "OpenApiConnection",
+                    "inputs": {
+                      "parameters": {
+                        "dataset": "@parameters('Task Management Site (tms_TaskManagementSite)')",
+                        "table": "@parameters('Task Scheduler List (tms_TaskSchedulerList)')",
+                        "id": "@items('Apply_to_each')?['ID']",
+                        "item/start_scheduler": "@items('Apply_to_each')?['start_scheduler']",
+                        "item/end_scheduler": "@items('Apply_to_each')?['end_scheduler']",
+                        "item/is_active": false,
+                        "item/last_running": "@items('Apply_to_each')?['next_running']",
+                        "item/next_running": "@null"
+                      },
+                      "host": {
+                        "apiId": "/providers/Microsoft.PowerApps/apis/shared_sharepointonline",
+                        "operationId": "PatchItem",
+                        "connectionName": "shared_sharepointonline-1"
+                      }
+                    }
+                  }
+                }
+              },
+              "expression": {
+                "and": [
+                  {
+                    "lessOrEquals": [
+                      "@outputs('Compose_-_Next_Running')",
+                      "@items('Apply_to_each')?['end_scheduler']"
+                    ]
+                  }
+                ]
+              },
+              "type": "If"
+            },
+            "Condition_-_Do_Not_Have_Parent": {
+              "actions": {},
+              "else": {
+                "actions": {
+                  "Get_item_-_Parent_Task": {
+                    "type": "OpenApiConnection",
+                    "inputs": {
+                      "parameters": {
+                        "dataset": "@parameters('Task Management Site (tms_TaskManagementSite)')",
+                        "table": "@parameters('Task List (tms_TaskList)')",
+                        "id": "@items('Apply_to_each')?['ID_Parent_Lookup/Id']"
+                      },
+                      "host": {
+                        "apiId": "/providers/Microsoft.PowerApps/apis/shared_sharepointonline",
+                        "operationId": "GetItem",
+                        "connectionName": "shared_sharepointonline-1"
+                      }
+                    }
+                  }
+                }
+              },
+              "expression": {
+                "and": [
+                  {
+                    "equals": [
+                      "@\r\nequals(\r\n    items('Apply_to_each')?['ID_Parent_Lookup/Id'],\r\n    null\r\n)\r\n\r\n",
+                      true
+                    ]
+                  }
+                ]
+              },
+              "type": "If"
+            },
+            "Get_item_-_User_List": {
+              "type": "OpenApiConnection",
+              "inputs": {
+                "parameters": {
+                  "dataset": "@parameters('Task Management Site (tms_TaskManagementSite)')",
+                  "table": "@parameters('User List (tms_UserList)')",
+                  "id": "@items('Apply_to_each')?['ID_User_TS_Created_By/Id']"
+                },
+                "host": {
+                  "apiId": "/providers/Microsoft.PowerApps/apis/shared_sharepointonline",
+                  "operationId": "GetItem",
+                  "connectionName": "shared_sharepointonline-1"
+                }
+              }
+            },
+            "Condition_-_Is_CEO_Task": {
+              "actions": {
+                "Condition_-_Is_Empty_-_CEO_Task": {
+                  "actions": {},
+                  "runAfter": {
+                    "Get_files_(properties_only)_-_Get_Folder_Name_-_CEO_Task": [
+                      "Succeeded"
+                    ]
+                  },
+                  "else": {
+                    "actions": {
+                      "Update_file_properties_-_ID_Task_Lookup_Column_-_CEO_Task": {
+                        "runAfter": {
+                          "Send_an_HTTP_request_to_SharePoint_-_CEO_Task": [
+                            "Succeeded"
+                          ]
+                        },
+                        "type": "OpenApiConnection",
+                        "inputs": {
+                          "parameters": {
+                            "dataset": "@parameters('Executive Task Site (tms_ExecutiveTaskSite)')",
+                            "table": "@parameters('Executive Working Y2026 Document Library (tms_ExecutiveWorkingY2026DocumentLibrary)')",
+                            "id": "@outputs('Copy_folder_-_From_Task_Scheduler_Reference_to_Working_-_CEO_Task')?['body/ItemId']",
+                            "item/ID_Task": "@outputs('Create_item_-_Task_List')?['body/ID']",
+                            "item/task_root_number": "@outputs('Create_item_-_Task_List')?['body/ID_GrandParent_Lookup/Id']",
+                            "item/task_level": "@outputs('Create_item_-_Task_List')?['body/task_level']",
+                            "item/ID_Task_Scheduler": "@items('Apply_to_each')?['ID']"
+                          },
+                          "host": {
+                            "apiId": "/providers/Microsoft.PowerApps/apis/shared_sharepointonline",
+                            "operationId": "PatchFileItem",
+                            "connectionName": "shared_sharepointonline-1"
+                          }
+                        }
+                      },
+                      "Copy_folder_-_From_Task_Scheduler_Reference_to_Working_-_CEO_Task": {
+                        "type": "OpenApiConnection",
+                        "inputs": {
+                          "parameters": {
+                            "dataset": "@parameters('Executive Task Site (tms_ExecutiveTaskSite)')",
+                            "parameters/sourceFolderId": "@first(outputs('Get_files_(properties_only)_-_Get_Folder_Name_-_CEO_Task')?['body/value'])?['{Identifier}']",
+                            "parameters/destinationDataset": "@parameters('Executive Task Site (tms_ExecutiveTaskSite)')",
+                            "parameters/destinationFolderPath": "@parameters('Document Library Name for Executive Working (tms_DocumentLibraryNameforExecutiveWorking)')",
+                            "parameters/nameConflictBehavior": 1
+                          },
+                          "host": {
+                            "apiId": "/providers/Microsoft.PowerApps/apis/shared_sharepointonline",
+                            "operationId": "CopyFolderAsync",
+                            "connectionName": "shared_sharepointonline-1"
+                          }
+                        }
+                      },
+                      "Send_an_HTTP_request_to_SharePoint_-_CEO_Task": {
+                        "runAfter": {
+                          "Copy_folder_-_From_Task_Scheduler_Reference_to_Working_-_CEO_Task": [
+                            "Succeeded"
+                          ]
+                        },
+                        "type": "OpenApiConnection",
+                        "inputs": {
+                          "parameters": {
+                            "dataset": "@parameters('Executive Task Site (tms_ExecutiveTaskSite)')",
+                            "parameters/method": "POST",
+                            "parameters/uri": "_api/web/lists/GetbyTitle('@{parameters('Document Library Name for Executive Working (tms_DocumentLibraryNameforExecutiveWorking)')}')/items(@{outputs('Copy_folder_-_From_Task_Scheduler_Reference_to_Working_-_CEO_Task')?['body/ItemId']})/validateUpdateListItem",
+                            "parameters/body": "{\n  \"formValues\": [\n    {\n      \"FieldName\": \"FileLeafRef\",\n      \"FieldValue\": \"@{concat(\r\n    toUpper(formatDateTime(utcNow(),'ddMMMyyyy')),\r\n    '_TS',\r\n    substring(\r\n        concat('00000', string(items('Apply_to_each')?['ID'])),\r\n        sub(length(concat('00000', string(items('Apply_to_each')?['ID']))), 5),\r\n        5\r\n    ),\r\n        '_T',\r\n    substring(\r\n        concat('00000', string(outputs('Create_item_-_Task_List')?['body/ID'])),\r\n        sub(length(concat('00000', string(outputs('Create_item_-_Task_List')?['body/ID']))), 5),\r\n        5\r\n    ),\r\n    '_',\r\n    outputs('Create_item_-_Task_List')?['body/task_name']\r\n)}\"\n    }\n  ]\n}"
+                          },
+                          "host": {
+                            "apiId": "/providers/Microsoft.PowerApps/apis/shared_sharepointonline",
+                            "operationId": "HttpRequest",
+                            "connectionName": "shared_sharepointonline-1"
+                          }
+                        }
+                      },
+                      "Get_files_(properties_only)_-_All_Files_in_Folder_-_CEO_Task": {
+                        "runAfter": {
+                          "Update_file_properties_-_ID_Task_Lookup_Column_-_CEO_Task": [
+                            "Succeeded"
+                          ]
+                        },
+                        "type": "OpenApiConnection",
+                        "inputs": {
+                          "parameters": {
+                            "dataset": "@parameters('Executive Task Site (tms_ExecutiveTaskSite)')",
+                            "table": "@parameters('Executive Working Y2026 Document Library (tms_ExecutiveWorkingY2026DocumentLibrary)')",
+                            "folderPath": "@outputs('Update_file_properties_-_ID_Task_Lookup_Column_-_CEO_Task')?['body/{FullPath}']"
+                          },
+                          "host": {
+                            "apiId": "/providers/Microsoft.PowerApps/apis/shared_sharepointonline",
+                            "operationId": "GetFileItems",
+                            "connectionName": "shared_sharepointonline-1"
+                          }
+                        }
+                      },
+                      "For_each_3": {
+                        "foreach": "@outputs('Get_files_(properties_only)_-_All_Files_in_Folder_-_CEO_Task')?['body/value']",
+                        "actions": {
+                          "Send_an_HTTP_request_to_SharePoint_Rename_All_Files_-_CEO_Task": {
+                            "type": "OpenApiConnection",
+                            "inputs": {
+                              "parameters": {
+                                "dataset": "@parameters('Executive Task Site (tms_ExecutiveTaskSite)')",
+                                "parameters/method": "POST",
+                                "parameters/uri": "_api/web/lists/GetbyTitle('@{parameters('Document Library Name for Executive Working (tms_DocumentLibraryNameforExecutiveWorking)')}')/items(@{item()?['ID']})/validateUpdateListItem",
+                                "parameters/body": "{\n  \"formValues\": [\n    {\n      \"FieldName\": \"FileLeafRef\",\n      \"FieldValue\": \"@{concat(\r\n    'T',\r\n    substring(\r\n        concat('00000', string(outputs('Create_item_-_Task_List')?['body/ID'])),\r\n        sub(length(concat('00000', string(outputs('Create_item_-_Task_List')?['body/ID']))), 5),\r\n        5\r\n    ),\r\n    substring(\r\n        item()?['{Name}'],\r\n        7,\r\n        sub(length(item()?['{Name}']),7)\r\n    )\r\n)}\"\n    }\n  ]\n}"
+                              },
+                              "host": {
+                                "apiId": "/providers/Microsoft.PowerApps/apis/shared_sharepointonline",
+                                "operationId": "HttpRequest",
+                                "connectionName": "shared_sharepointonline-1"
+                              }
+                            }
+                          }
+                        },
+                        "runAfter": {
+                          "Get_files_(properties_only)_-_All_Files_in_Folder_-_CEO_Task": [
+                            "Succeeded"
+                          ]
+                        },
+                        "type": "Foreach"
+                      }
+                    }
+                  },
+                  "expression": {
+                    "and": [
+                      {
+                        "equals": [
+                          "@empty(outputs('Get_files_(properties_only)_-_Get_Folder_Name_-_CEO_Task')?['body/value'])",
+                          true
+                        ]
+                      }
+                    ]
+                  },
+                  "type": "If"
+                },
+                "Get_files_(properties_only)_-_Get_Folder_Name_-_CEO_Task": {
+                  "type": "OpenApiConnection",
+                  "inputs": {
+                    "parameters": {
+                      "dataset": "@parameters('Executive Task Site (tms_ExecutiveTaskSite)')",
+                      "table": "@parameters('Executive Task Scheduler Reference Document Library (tms_ExecutiveTaskSchedulerReferenceDocumentLibrary)')",
+                      "$filter": "ID_Task_Scheduler eq @{items('Apply_to_each')?['ID']}"
+                    },
+                    "host": {
+                      "apiId": "/providers/Microsoft.PowerApps/apis/shared_sharepointonline",
+                      "operationId": "GetFileItems",
+                      "connectionName": "shared_sharepointonline-1"
+                    }
+                  }
+                }
+              },
+              "runAfter": {
+                "Get_item_-_User_List": [
+                  "Succeeded"
+                ],
+                "Create_item_-_Task_List": [
+                  "Succeeded"
+                ]
+              },
+              "else": {
+                "actions": {
+                  "Condition_-_Is_Empty": {
+                    "actions": {},
+                    "runAfter": {
+                      "Get_files_(properties_only)_-_Get_Folder_Name": [
+                        "Succeeded"
+                      ]
+                    },
+                    "else": {
+                      "actions": {
+                        "Update_file_properties_-_ID_Task_Lookup_Column": {
+                          "runAfter": {
+                            "Send_an_HTTP_request_to_SharePoint": [
+                              "Succeeded"
+                            ]
+                          },
+                          "type": "OpenApiConnection",
+                          "inputs": {
+                            "parameters": {
+                              "dataset": "@parameters('Task Management Site (tms_TaskManagementSite)')",
+                              "table": "@parameters('Working Y2026 Document Library (tms_WorkingY2026DocumentLibrary)')",
+                              "id": "@outputs('Copy_folder_-_From_Task_Scheduler_Reference_to_Working')?['body/ItemId']",
+                              "item/ID_Task/Id": "@outputs('Create_item_-_Task_List')?['body/ID']",
+                              "item/ID_Task_Scheduler/Id": "@items('Apply_to_each')?['ID']"
+                            },
+                            "host": {
+                              "apiId": "/providers/Microsoft.PowerApps/apis/shared_sharepointonline",
+                              "operationId": "PatchFileItem",
+                              "connectionName": "shared_sharepointonline-1"
+                            }
+                          }
+                        },
+                        "Copy_folder_-_From_Task_Scheduler_Reference_to_Working": {
+                          "type": "OpenApiConnection",
+                          "inputs": {
+                            "parameters": {
+                              "dataset": "@parameters('Task Management Site (tms_TaskManagementSite)')",
+                              "parameters/sourceFolderId": "@first(outputs('Get_files_(properties_only)_-_Get_Folder_Name')?['body/value'])?['{Identifier}']",
+                              "parameters/destinationDataset": "@parameters('Task Management Site (tms_TaskManagementSite)')",
+                              "parameters/destinationFolderPath": "/@{parameters('Document Library Name for Working (tms_DocumentLibraryNameforWorking)')}",
+                              "parameters/nameConflictBehavior": 1
+                            },
+                            "host": {
+                              "apiId": "/providers/Microsoft.PowerApps/apis/shared_sharepointonline",
+                              "operationId": "CopyFolderAsync",
+                              "connectionName": "shared_sharepointonline-1"
+                            }
+                          }
+                        },
+                        "Send_an_HTTP_request_to_SharePoint": {
+                          "runAfter": {
+                            "Copy_folder_-_From_Task_Scheduler_Reference_to_Working": [
+                              "Succeeded"
+                            ]
+                          },
+                          "type": "OpenApiConnection",
+                          "inputs": {
+                            "parameters": {
+                              "dataset": "@parameters('Task Management Site (tms_TaskManagementSite)')",
+                              "parameters/method": "POST",
+                              "parameters/uri": "_api/web/lists/GetbyTitle('@{parameters('Document Library Name for Working (tms_DocumentLibraryNameforWorking)')}')/items(@{outputs('Copy_folder_-_From_Task_Scheduler_Reference_to_Working')?['body/ItemId']})/validateUpdateListItem",
+                              "parameters/body": "{\n  \"formValues\": [\n    {\n      \"FieldName\": \"FileLeafRef\",\n      \"FieldValue\": \"@{concat(\r\n    toUpper(formatDateTime(utcNow(),'ddMMMyyyy')),\r\n    '_TS',\r\n    substring(\r\n        concat('00000', string(items('Apply_to_each')?['ID'])),\r\n        sub(length(concat('00000', string(items('Apply_to_each')?['ID']))), 5),\r\n        5\r\n    ),\r\n        '_T',\r\n    substring(\r\n        concat('00000', string(outputs('Create_item_-_Task_List')?['body/ID'])),\r\n        sub(length(concat('00000', string(outputs('Create_item_-_Task_List')?['body/ID']))), 5),\r\n        5\r\n    ),\r\n    '_',\r\n    outputs('Create_item_-_Task_List')?['body/task_name']\r\n)}\"\n    }\n  ]\n}"
+                            },
+                            "host": {
+                              "apiId": "/providers/Microsoft.PowerApps/apis/shared_sharepointonline",
+                              "operationId": "HttpRequest",
+                              "connectionName": "shared_sharepointonline-1"
+                            }
+                          }
+                        },
+                        "Get_files_(properties_only)_-_All_Files_in_Folder": {
+                          "runAfter": {
+                            "Update_file_properties_-_ID_Task_Lookup_Column": [
+                              "Succeeded"
+                            ]
+                          },
+                          "type": "OpenApiConnection",
+                          "inputs": {
+                            "parameters": {
+                              "dataset": "@parameters('Task Management Site (tms_TaskManagementSite)')",
+                              "table": "@parameters('Working Y2026 Document Library (tms_WorkingY2026DocumentLibrary)')",
+                              "folderPath": "@outputs('Update_file_properties_-_ID_Task_Lookup_Column')?['body/{FullPath}']"
+                            },
+                            "host": {
+                              "apiId": "/providers/Microsoft.PowerApps/apis/shared_sharepointonline",
+                              "operationId": "GetFileItems",
+                              "connectionName": "shared_sharepointonline-1"
+                            }
+                          }
+                        },
+                        "For_each_2": {
+                          "foreach": "@outputs('Get_files_(properties_only)_-_All_Files_in_Folder')?['body/value']",
+                          "actions": {
+                            "Send_an_HTTP_request_to_SharePoint_Rename_All_Files": {
+                              "type": "OpenApiConnection",
+                              "inputs": {
+                                "parameters": {
+                                  "dataset": "@parameters('Task Management Site (tms_TaskManagementSite)')",
+                                  "parameters/method": "POST",
+                                  "parameters/uri": "_api/web/lists/GetbyTitle('@{parameters('Document Library Name for Working (tms_DocumentLibraryNameforWorking)')}')/items(@{item()?['ID']})/validateUpdateListItem",
+                                  "parameters/body": "{\n  \"formValues\": [\n    {\n      \"FieldName\": \"FileLeafRef\",\n      \"FieldValue\": \"@{concat(\r\n    'T',\r\n    substring(\r\n        concat('00000', string(outputs('Create_item_-_Task_List')?['body/ID'])),\r\n        sub(length(concat('00000', string(outputs('Create_item_-_Task_List')?['body/ID']))), 5),\r\n        5\r\n    ),\r\n    substring(\r\n        item()?['{Name}'],\r\n        7,\r\n        sub(length(item()?['{Name}']),7)\r\n    )\r\n)}\"\n    }\n  ]\n}"
+                                },
+                                "host": {
+                                  "apiId": "/providers/Microsoft.PowerApps/apis/shared_sharepointonline",
+                                  "operationId": "HttpRequest",
+                                  "connectionName": "shared_sharepointonline-1"
+                                }
+                              }
+                            }
+                          },
+                          "runAfter": {
+                            "Get_files_(properties_only)_-_All_Files_in_Folder": [
+                              "Succeeded"
+                            ]
+                          },
+                          "type": "Foreach"
+                        }
+                      }
+                    },
+                    "expression": {
+                      "and": [
+                        {
+                          "equals": [
+                            "@empty(outputs('Get_files_(properties_only)_-_Get_Folder_Name')?['body/value'])",
+                            true
+                          ]
+                        }
+                      ]
+                    },
+                    "type": "If"
+                  },
+                  "Get_files_(properties_only)_-_Get_Folder_Name": {
+                    "type": "OpenApiConnection",
+                    "inputs": {
+                      "parameters": {
+                        "dataset": "@parameters('Task Management Site (tms_TaskManagementSite)')",
+                        "table": "@parameters('Task Scheduler Reference Document Library (tms_TaskSchedulerReferenceDocumentLibrary)')",
+                        "$filter": "ID_Task_Scheduler eq @{items('Apply_to_each')?['ID']}"
+                      },
+                      "host": {
+                        "apiId": "/providers/Microsoft.PowerApps/apis/shared_sharepointonline",
+                        "operationId": "GetFileItems",
+                        "connectionName": "shared_sharepointonline-1"
+                      }
+                    }
+                  }
+                }
+              },
+              "expression": {
+                "and": [
+                  {
+                    "equals": [
+                      "@int(outputs('Get_item_-_User_List')?['body/ID_Role_x003a__x0020_role_level/Value'])",
+                      4
+                    ]
+                  }
+                ]
+              },
+              "type": "If"
+            }
+          },
+          "runAfter": {
+            "Get_items": [
+              "Succeeded"
+            ]
+          },
+          "type": "Foreach"
+        }
+      }
+    },
+    "templateName": null
+  },
+  "schemaVersion": "1.0.0.0"
+}

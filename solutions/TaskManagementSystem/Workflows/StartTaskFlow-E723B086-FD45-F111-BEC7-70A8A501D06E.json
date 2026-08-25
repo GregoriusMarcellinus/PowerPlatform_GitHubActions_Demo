@@ -1,0 +1,238 @@
+{
+  "properties": {
+    "connectionReferences": {
+      "shared_sharepointonline": {
+        "runtimeSource": "embedded",
+        "connection": {
+          "connectionReferenceLogicalName": "tms_SharePointAdmin"
+        },
+        "api": {
+          "name": "shared_sharepointonline"
+        }
+      },
+      "shared_office365": {
+        "runtimeSource": "invoker",
+        "connection": {
+          "connectionReferenceLogicalName": "tms_sharedoffice365_d642d"
+        },
+        "api": {
+          "name": "shared_office365"
+        }
+      },
+      "shared_teams": {
+        "runtimeSource": "invoker",
+        "connection": {
+          "connectionReferenceLogicalName": "tms_sharedteams_7e1c0"
+        },
+        "api": {
+          "name": "shared_teams"
+        }
+      }
+    },
+    "definition": {
+      "$schema": "https://schema.management.azure.com/providers/Microsoft.Logic/schemas/2016-06-01/workflowdefinition.json#",
+      "contentVersion": "1.0.0.0",
+      "parameters": {
+        "$authentication": {
+          "defaultValue": {},
+          "type": "SecureObject"
+        },
+        "$connections": {
+          "defaultValue": {},
+          "type": "Object"
+        },
+        "Task Management Site (tms_TaskManagementSite)": {
+          "defaultValue": "https://m365b467805.sharepoint.com/sites/TaskManagement",
+          "type": "String",
+          "metadata": {
+            "schemaName": "tms_TaskManagementSite"
+          }
+        },
+        "Task List (tms_TaskList)": {
+          "defaultValue": "2b09fc89-2c29-499b-bca9-cd2d764eaf3a",
+          "type": "String",
+          "metadata": {
+            "schemaName": "tms_TaskList"
+          }
+        }
+      },
+      "triggers": {
+        "manual": {
+          "metadata": {
+            "operationMetadataId": "7e7f91e2-77c9-4a60-8a86-61cde6dd9a65"
+          },
+          "type": "Request",
+          "kind": "PowerAppV2",
+          "inputs": {
+            "schema": {
+              "type": "object",
+              "properties": {
+                "number": {
+                  "description": "Please enter a number",
+                  "title": "ID_Task",
+                  "type": "number",
+                  "x-ms-content-hint": "NUMBER",
+                  "x-ms-dynamically-added": true
+                },
+                "number_1": {
+                  "description": "Please enter a number",
+                  "title": "TaskStartedById",
+                  "type": "number",
+                  "x-ms-content-hint": "NUMBER",
+                  "x-ms-dynamically-added": true
+                }
+              },
+              "required": [
+                "number",
+                "number_1"
+              ]
+            }
+          }
+        }
+      },
+      "actions": {
+        "Update_item_-_Task": {
+          "runAfter": {},
+          "type": "OpenApiConnection",
+          "inputs": {
+            "parameters": {
+              "dataset": "@parameters('Task Management Site (tms_TaskManagementSite)')",
+              "table": "@parameters('Task List (tms_TaskList)')",
+              "id": "@triggerBody()?['number']",
+              "item/actual_start_date": "@utcNow()",
+              "item/ID_Status/Id": 3,
+              "item/ID_User_Task_Started_By/Id": "@triggerBody()?['number_1']"
+            },
+            "host": {
+              "apiId": "/providers/Microsoft.PowerApps/apis/shared_sharepointonline",
+              "operationId": "PatchItem",
+              "connectionName": "shared_sharepointonline"
+            }
+          }
+        },
+        "Send_an_email_(V2)_-_To_Task_Creator": {
+          "runAfter": {
+            "Update_item_-_Task": [
+              "Succeeded"
+            ]
+          },
+          "metadata": {
+            "operationMetadataId": "1fbe8886-2998-41c7-8e89-f36e33de0943"
+          },
+          "type": "OpenApiConnection",
+          "inputs": {
+            "parameters": {
+              "emailMessage/To": "@outputs('Update_item_-_Task')?['body/ID_User_Task_Created_By/Value']",
+              "emailMessage/Subject": "@{concat(\r\n  'TID',\r\n  substring(\r\n    concat('00000', string(outputs('Update_item_-_Task')?['body/ID'])),\r\n    sub(length(concat('00000', string(outputs('Update_item_-_Task')?['body/ID']))), 5),\r\n    5\r\n  )\r\n)}  @{outputs('Update_item_-_Task')?['body/task_name']} is Now IN PROGRESS",
+              "emailMessage/Body": "<p class=\"editor-paragraph\">Hi <b>@{outputs('Update_item_-_Task')?['body/ID_User_Task_Created_By/Value']}</b>,<br><br>Your task is now <b>IN PROGRESS</b>.<br><table border=\"0\">\n<tbody>\n<tr><td>Task ID</td><td> : @{concat(\r\n  'TID',\r\n  substring(\r\n    concat('00000', string(outputs('Update_item_-_Task')?['body/ID'])),\r\n    sub(length(concat('00000', string(outputs('Update_item_-_Task')?['body/ID']))), 5),\r\n    5\r\n  )\r\n)}</td></tr>\n<tr><td>Task Name</td><td> : @{outputs('Update_item_-_Task')?['body/task_name']}</td></tr>\n<tr><td>Task Priority</td><td> : @{outputs('Update_item_-_Task')?['body/ID_Priority/Value']}</td></tr>\n<tr><td>Task Description</td><td> : @{outputs('Update_item_-_Task')?['body/task_description']}</td></tr>\n<tr><td>Task Status</td><td> : @{outputs('Update_item_-_Task')?['body/ID_Status/Value']}</td></tr>\n<tr><td>Plan Start Date</td><td> : @{formatDateTime(outputs('Update_item_-_Task')?['body/plan_start_date'], 'dddd, dd MMM yyyy')}</td></tr>\n<tr><td>Actual Start Date</td><td> : @{formatDateTime(outputs('Update_item_-_Task')?['body/actual_start_date'], 'dddd, dd MMM yyyy')}</td></tr>\n<tr><td>Plan Finish Date</td><td> : @{formatDateTime(outputs('Update_item_-_Task')?['body/plan_finish_date'], 'dddd, dd MMM yyyy')}</td></tr>\n<tr><td>Task Started By</td><td> : @{outputs('Update_item_-_Task')?['body/ID_User_Task_Created_By/Value']}</td></tr>\n</tbody>\n</table><br>The task has officially been picked up and is currently being worked on by <b>@{outputs('Update_item_-_Task')?['body/ID_User_Task_Started_By/Value']}</b><br><br>You can monitor the progress through the link below:<br><a href=\"https://apps.powerapps.com/play/e/default-ba21f1d3-cac5-4fff-ba59-3d4a1bd8bffa/a/a767a055-f110-4ebd-b49f-9c3ffd157688?tenantId=ba21f1d3-cac5-4fff-ba59-3d4a1bd8bffa&amp;hint=b66f0ca6-3e60-4b0c-8ab9-d02dc13a736d&amp;source=sharebutton&amp;sourcetime=1776076575777&amp;ID_Task=@{outputs('Update_item_-_Task')?['body/ID']}\" class=\"editor-link\">Open Power Apps</a><br><br>Thank you.</p>",
+              "emailMessage/Sensitivity": "defa4170-0d19-0005-0007-bc88714345d2",
+              "emailMessage/Importance": "High"
+            },
+            "host": {
+              "apiId": "/providers/Microsoft.PowerApps/apis/shared_office365",
+              "operationId": "SendEmailV2",
+              "connectionName": "shared_office365"
+            }
+          }
+        },
+        "Post_message_in_a_chat_or_channel_-_To_Task_Creator": {
+          "runAfter": {
+            "Update_item_-_Task": [
+              "Succeeded"
+            ]
+          },
+          "type": "OpenApiConnection",
+          "inputs": {
+            "parameters": {
+              "poster": "Flow bot",
+              "location": "Chat with Flow bot",
+              "body/recipient": "@outputs('Update_item_-_Task')?['body/ID_User_Task_Created_By/Value']",
+              "body/messageBody": "<p class=\"editor-paragraph\">Hi <b>@{outputs('Update_item_-_Task')?['body/ID_User_Task_Created_By/Value']}</b>,<br><br>Your task is now <b>IN PROGRESS</b>.<br><table border=\"0\">\n<tbody>\n<tr><td>Task ID</td><td> : @{concat(\n  'TID',\n  substring(\n    concat('00000', string(outputs('Update_item_-_Task')?['body/ID'])),\n    sub(length(concat('00000', string(outputs('Update_item_-_Task')?['body/ID']))), 5),\n    5\n  )\n)}</td></tr>\n<tr><td>Task Name</td><td> : @{outputs('Update_item_-_Task')?['body/task_name']}</td></tr>\n<tr><td>Task Priority</td><td> : @{outputs('Update_item_-_Task')?['body/ID_Priority/Value']}</td></tr>\n<tr><td>Task Description</td><td> : @{outputs('Update_item_-_Task')?['body/task_description']}</td></tr>\n<tr><td>Task Status</td><td> : @{outputs('Update_item_-_Task')?['body/ID_Status/Value']}</td></tr>\n<tr><td>Plan Start Date</td><td> : @{formatDateTime(outputs('Update_item_-_Task')?['body/plan_start_date'], 'dddd, dd MMM yyyy')}</td></tr>\n<tr><td>Actual Start Date</td><td> : @{formatDateTime(outputs('Update_item_-_Task')?['body/actual_start_date'], 'dddd, dd MMM yyyy')}</td></tr>\n<tr><td>Plan Finish Date</td><td> : @{formatDateTime(outputs('Update_item_-_Task')?['body/plan_finish_date'], 'dddd, dd MMM yyyy')}</td></tr>\n<tr><td>Task Started By</td><td> : @{outputs('Update_item_-_Task')?['body/ID_User_Task_Created_By/Value']}</td></tr>\n</tbody>\n</table><br>The task has officially been picked up and is currently being worked on by <b>@{outputs('Update_item_-_Task')?['body/ID_User_Task_Started_By/Value']}</b><br><br>You can monitor the progress through the link below:<br><a href=\"https://apps.powerapps.com/play/e/default-ba21f1d3-cac5-4fff-ba59-3d4a1bd8bffa/a/a767a055-f110-4ebd-b49f-9c3ffd157688?tenantId=ba21f1d3-cac5-4fff-ba59-3d4a1bd8bffa&amp;hint=b66f0ca6-3e60-4b0c-8ab9-d02dc13a736d&amp;source=sharebutton&amp;sourcetime=1776076575777&amp;ID_Task=@{outputs('Update_item_-_Task')?['body/ID']}\" class=\"editor-link\">Open Power Apps</a><br><br>Thank you.</p>",
+              "body/isAlert": true
+            },
+            "host": {
+              "apiId": "/providers/Microsoft.PowerApps/apis/shared_teams",
+              "operationId": "PostMessageToConversation",
+              "connectionName": "shared_teams"
+            }
+          }
+        },
+        "Respond_to_a_Power_App_or_flow": {
+          "runAfter": {
+            "Compose_-_Task_Response": [
+              "Succeeded"
+            ]
+          },
+          "type": "Response",
+          "kind": "PowerApp",
+          "inputs": {
+            "schema": {
+              "type": "object",
+              "properties": {
+                "success": {
+                  "title": "Success",
+                  "type": "boolean",
+                  "x-ms-content-hint": "BOOLEAN",
+                  "x-ms-dynamically-added": true
+                },
+                "task": {
+                  "title": "Task",
+                  "type": "string",
+                  "x-ms-content-hint": "TEXT",
+                  "x-ms-dynamically-added": true
+                }
+              },
+              "additionalProperties": {}
+            },
+            "statusCode": 200,
+            "body": {
+              "success": true,
+              "task": "@{outputs('Compose_-_Task_Response')}"
+            }
+          }
+        },
+        "Compose_-_Task_Response": {
+          "runAfter": {
+            "Update_item_-_Task": [
+              "Succeeded"
+            ]
+          },
+          "type": "Compose",
+          "inputs": {
+            "ID": "@{outputs('Update_item_-_Task')?['body/ID']}",
+            "task_level": "@{outputs('Update_item_-_Task')?['body/task_level']}",
+            "task_name": "@{outputs('Update_item_-_Task')?['body/task_name']}",
+            "task_duration": "@{outputs('Update_item_-_Task')?['body/task_duration']}",
+            "ID_GrandParent_Lookup": "@{outputs('Update_item_-_Task')?['body/ID_GrandParent_Lookup']}",
+            "ID_Parent_Lookup": "@{outputs('Update_item_-_Task')?['body/ID_Parent_Lookup']}",
+            "ID_Priority": "@{outputs('Update_item_-_Task')?['body/ID_Priority']}",
+            "task_description": "@{outputs('Update_item_-_Task')?['body/task_description']}",
+            "plan_start_date": "@{outputs('Update_item_-_Task')?['body/plan_start_date']}",
+            "plan_finish_date": "@{outputs('Update_item_-_Task')?['body/plan_finish_date']}",
+            "is_task": "@outputs('Update_item_-_Task')?['body/is_task']",
+            "ID_Status": "@{outputs('Update_item_-_Task')?['body/ID_Status']}",
+            "ID_User_Task_Created_By": "@{outputs('Update_item_-_Task')?['body/ID_User_Task_Created_By']}",
+            "Created": "@{outputs('Update_item_-_Task')?['body/Created']}",
+            "actual_start_date": "@{outputs('Update_item_-_Task')?['body/actual_start_date']}",
+            "actual_finish_date": "@{outputs('Update_item_-_Task')?['body/actual_finish_date']}",
+            "completion_date": "@{outputs('Update_item_-_Task')?['body/completion_date']}",
+            "ID_User_Task_Started_By": "@{outputs('Update_item_-_Task')?['body/ID_User_Task_Started_By']}",
+            "ID_Parent_Lookup_plan_start_date": "@{outputs('Update_item_-_Task')?['body/ID_Parent_Lookup_x003a__x0020_pl']}",
+            "ID_Parent_Lookup_plan_finish_date": "@{outputs('Update_item_-_Task')?['body/ID_Parent_Lookup_x003a__x0020_pl0']}",
+            "ID_Parent_Lookup_actual_start_date": "@{outputs('Update_item_-_Task')?['body/ID_Parent_Lookup_x003a__x0020_ac']}",
+            "ID_Parent_Lookup_actual_finish_date": "@{outputs('Update_item_-_Task')?['body/ID_Parent_Lookup_x003a__x0020_ac0']}",
+            "ID_Parent_Lookup_completion_date": "@{outputs('Update_item_-_Task')?['body/ID_Parent_Lookup_x003a__x0020_co']}",
+            "ID_Task_Scheduler": "@{outputs('Update_item_-_Task')?['body/ID_Task_Scheduler']}",
+            "reminder_date": "@{outputs('Update_item_-_Task')?['body/reminder_date']}",
+            "Modified": "@{outputs('Update_item_-_Task')?['body/Modified']}",
+            "approval_type": "@{outputs('Update_item_-_Task')?['body/approval_type']}",
+            "approval_rule": "@{outputs('Update_item_-_Task')?['body/approval_rule']}",
+            "ID_User_Task_Finished_By": "@{outputs('Update_item_-_Task')?['body/ID_User_Task_Finished_By']}"
+          }
+        }
+      }
+    },
+    "templateName": null
+  },
+  "schemaVersion": "1.0.0.0"
+}

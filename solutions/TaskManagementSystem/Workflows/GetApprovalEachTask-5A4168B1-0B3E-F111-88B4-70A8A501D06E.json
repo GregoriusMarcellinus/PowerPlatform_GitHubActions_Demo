@@ -1,0 +1,206 @@
+{
+  "properties": {
+    "connectionReferences": {
+      "shared_sharepointonline-1": {
+        "runtimeSource": "embedded",
+        "connection": {
+          "connectionReferenceLogicalName": "tms_SharePointAdmin"
+        },
+        "api": {
+          "name": "shared_sharepointonline"
+        }
+      }
+    },
+    "definition": {
+      "$schema": "https://schema.management.azure.com/providers/Microsoft.Logic/schemas/2016-06-01/workflowdefinition.json#",
+      "contentVersion": "1.0.0.0",
+      "parameters": {
+        "$authentication": {
+          "defaultValue": {},
+          "type": "SecureObject"
+        },
+        "$connections": {
+          "defaultValue": {},
+          "type": "Object"
+        },
+        "Task Management Site (tms_TaskManagementSite)": {
+          "defaultValue": "https://m365b467805.sharepoint.com/sites/TaskManagement",
+          "type": "String",
+          "metadata": {
+            "schemaName": "tms_TaskManagementSite"
+          }
+        },
+        "Approval List (tms_ApprovalList)": {
+          "defaultValue": "ad84ee0b-4df9-49ac-965f-7abadfff85f9",
+          "type": "String",
+          "metadata": {
+            "schemaName": "tms_ApprovalList"
+          }
+        },
+        "Task List (tms_TaskList)": {
+          "defaultValue": "2b09fc89-2c29-499b-bca9-cd2d764eaf3a",
+          "type": "String",
+          "metadata": {
+            "schemaName": "tms_TaskList"
+          }
+        },
+        "Checklist List (tms_ChecklistList)": {
+          "defaultValue": "c0d32f4f-d4e8-43b9-8445-0ecd9b904004",
+          "type": "String",
+          "metadata": {
+            "schemaName": "tms_ChecklistList"
+          }
+        }
+      },
+      "triggers": {
+        "manual": {
+          "metadata": {
+            "operationMetadataId": "ae14d66e-468b-45d1-b9e8-aeadf593cefb"
+          },
+          "type": "Request",
+          "kind": "PowerAppV2",
+          "inputs": {
+            "schema": {
+              "type": "object",
+              "properties": {
+                "number": {
+                  "description": "Please enter a number",
+                  "title": "ID_Task",
+                  "type": "number",
+                  "x-ms-content-hint": "NUMBER",
+                  "x-ms-dynamically-added": true
+                }
+              },
+              "required": [
+                "number"
+              ]
+            }
+          }
+        }
+      },
+      "actions": {
+        "Get_items_-_Approvals": {
+          "runAfter": {},
+          "type": "OpenApiConnection",
+          "inputs": {
+            "parameters": {
+              "dataset": "@parameters('Task Management Site (tms_TaskManagementSite)')",
+              "table": "@parameters('Approval List (tms_ApprovalList)')",
+              "$filter": "ID_Task/Id eq @{triggerBody()?['number']}"
+            },
+            "host": {
+              "apiId": "/providers/Microsoft.PowerApps/apis/shared_sharepointonline",
+              "operationId": "GetItems",
+              "connectionName": "shared_sharepointonline-1"
+            }
+          }
+        },
+        "Select_-_Approvals": {
+          "runAfter": {
+            "Get_items_-_Approvals": [
+              "Succeeded"
+            ]
+          },
+          "type": "Select",
+          "inputs": {
+            "from": "@outputs('Get_items_-_Approvals')?['body/value']",
+            "select": {
+              "ID": "@item()?['ID']",
+              "ID_Task": "@item()?['ID_Task']",
+              "ID_User_Requested_By": "@item()?['ID_User_Requested_By']",
+              "ID_User_Approver": "@item()?['ID_User_Approver']",
+              "note_by_requestor": "@item()?['note_by_requestor']",
+              "requested_at": "@item()?['requested_at']",
+              "approval_status": "@item()?['approval_status']",
+              "approval_level": "@item()?['approval_level']",
+              "approved_at": "@item()?['approved_at']",
+              "note_by_approver": "@item()?['note_by_approver']",
+              "is_current": "@item()?['is_current']"
+            }
+          }
+        },
+        "Respond_to_a_Power_App_or_flow": {
+          "runAfter": {
+            "Select_-_Approvals": [
+              "Succeeded"
+            ],
+            "Get_items_-_Tasks_Child": [
+              "Succeeded"
+            ],
+            "Get_items_-_Checklist_not_Done": [
+              "Succeeded"
+            ]
+          },
+          "type": "Response",
+          "kind": "PowerApp",
+          "inputs": {
+            "schema": {
+              "type": "object",
+              "properties": {
+                "approvals": {
+                  "title": "Approvals",
+                  "type": "string",
+                  "x-ms-content-hint": "TEXT",
+                  "x-ms-dynamically-added": true
+                },
+                "canapprove": {
+                  "title": "CanApprove",
+                  "type": "boolean",
+                  "x-ms-content-hint": "BOOLEAN",
+                  "x-ms-dynamically-added": true
+                },
+                "canstartapprovalprocess": {
+                  "title": "CanStartApprovalProcess",
+                  "type": "boolean",
+                  "x-ms-content-hint": "BOOLEAN",
+                  "x-ms-dynamically-added": true
+                }
+              },
+              "additionalProperties": {}
+            },
+            "statusCode": 200,
+            "body": {
+              "approvals": "@{body('Select_-_Approvals')}",
+              "canapprove": "@If(empty(outputs('Get_items_-_Tasks_Child')?['body/value']), true, false)",
+              "canstartapprovalprocess": "@If(empty(outputs('Get_items_-_Checklist_not_Done')?['body/value']), true, false)"
+            }
+          }
+        },
+        "Get_items_-_Tasks_Child": {
+          "runAfter": {},
+          "type": "OpenApiConnection",
+          "inputs": {
+            "parameters": {
+              "dataset": "@parameters('Task Management Site (tms_TaskManagementSite)')",
+              "table": "@parameters('Task List (tms_TaskList)')",
+              "$filter": "ID_Parent_Lookup/Id eq @{triggerBody()?['number']} and ID_Status/Id ne 5"
+            },
+            "host": {
+              "apiId": "/providers/Microsoft.PowerApps/apis/shared_sharepointonline",
+              "operationId": "GetItems",
+              "connectionName": "shared_sharepointonline-1"
+            }
+          }
+        },
+        "Get_items_-_Checklist_not_Done": {
+          "runAfter": {},
+          "type": "OpenApiConnection",
+          "inputs": {
+            "parameters": {
+              "dataset": "@parameters('Task Management Site (tms_TaskManagementSite)')",
+              "table": "@parameters('Checklist List (tms_ChecklistList)')",
+              "$filter": "ID_Task/Id eq @{triggerBody()?['number']} and checklist_status ne 'Done'"
+            },
+            "host": {
+              "apiId": "/providers/Microsoft.PowerApps/apis/shared_sharepointonline",
+              "operationId": "GetItems",
+              "connectionName": "shared_sharepointonline-1"
+            }
+          }
+        }
+      }
+    },
+    "templateName": null
+  },
+  "schemaVersion": "1.0.0.0"
+}

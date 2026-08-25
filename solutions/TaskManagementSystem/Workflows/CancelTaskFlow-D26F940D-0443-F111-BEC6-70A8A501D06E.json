@@ -1,0 +1,245 @@
+{
+  "properties": {
+    "connectionReferences": {
+      "shared_sharepointonline-1": {
+        "runtimeSource": "embedded",
+        "connection": {
+          "connectionReferenceLogicalName": "tms_SharePointAdmin"
+        },
+        "api": {
+          "name": "shared_sharepointonline"
+        }
+      }
+    },
+    "definition": {
+      "$schema": "https://schema.management.azure.com/providers/Microsoft.Logic/schemas/2016-06-01/workflowdefinition.json#",
+      "contentVersion": "1.0.0.0",
+      "parameters": {
+        "$authentication": {
+          "defaultValue": {},
+          "type": "SecureObject"
+        },
+        "$connections": {
+          "defaultValue": {},
+          "type": "Object"
+        },
+        "Task Management Site (tms_TaskManagementSite)": {
+          "defaultValue": "https://m365b467805.sharepoint.com/sites/TaskManagement",
+          "type": "String",
+          "metadata": {
+            "schemaName": "tms_TaskManagementSite"
+          }
+        },
+        "Task List (tms_TaskList)": {
+          "defaultValue": "2b09fc89-2c29-499b-bca9-cd2d764eaf3a",
+          "type": "String",
+          "metadata": {
+            "schemaName": "tms_TaskList"
+          }
+        }
+      },
+      "triggers": {
+        "manual": {
+          "metadata": {
+            "operationMetadataId": "7e7f91e2-77c9-4a60-8a86-61cde6dd9a65"
+          },
+          "type": "Request",
+          "kind": "PowerAppV2",
+          "inputs": {
+            "schema": {
+              "type": "object",
+              "properties": {
+                "number": {
+                  "description": "Please enter a number",
+                  "title": "ID_Task",
+                  "type": "number",
+                  "x-ms-content-hint": "NUMBER",
+                  "x-ms-dynamically-added": true
+                }
+              },
+              "required": [
+                "number"
+              ]
+            }
+          }
+        }
+      },
+      "actions": {
+        "Get_items_-_Check_ID_Parent_Lookup_or_ID_GrandParent_Lookup": {
+          "runAfter": {},
+          "type": "OpenApiConnection",
+          "inputs": {
+            "parameters": {
+              "dataset": "@parameters('Task Management Site (tms_TaskManagementSite)')",
+              "table": "@parameters('Task List (tms_TaskList)')",
+              "$filter": "(ID_Parent_Lookup/Id eq @{triggerBody()?['number']}) or (ID_GrandParent_Lookup/Id eq @{triggerBody()?['number']})",
+              "$top": 1000
+            },
+            "host": {
+              "apiId": "/providers/Microsoft.PowerApps/apis/shared_sharepointonline",
+              "operationId": "GetItems",
+              "connectionName": "shared_sharepointonline-1"
+            }
+          }
+        },
+        "Condition_-_There_Isn't_Any_Child": {
+          "actions": {
+            "Update_item_-_Task": {
+              "type": "OpenApiConnection",
+              "inputs": {
+                "parameters": {
+                  "dataset": "@parameters('Task Management Site (tms_TaskManagementSite)')",
+                  "table": "@parameters('Task List (tms_TaskList)')",
+                  "id": "@triggerBody()?['number']",
+                  "item/ID_Status/Id": 11
+                },
+                "host": {
+                  "apiId": "/providers/Microsoft.PowerApps/apis/shared_sharepointonline",
+                  "operationId": "PatchItem",
+                  "connectionName": "shared_sharepointonline-1"
+                }
+              }
+            },
+            "Respond_to_a_Power_App_or_flow_-_Canceled": {
+              "runAfter": {
+                "Compose_-_Task_Response": [
+                  "Succeeded"
+                ]
+              },
+              "type": "Response",
+              "kind": "PowerApp",
+              "inputs": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "title": "Success",
+                      "type": "boolean",
+                      "x-ms-content-hint": "BOOLEAN",
+                      "x-ms-dynamically-added": true
+                    },
+                    "canceled": {
+                      "title": "Canceled",
+                      "type": "boolean",
+                      "x-ms-content-hint": "BOOLEAN",
+                      "x-ms-dynamically-added": true
+                    },
+                    "task": {
+                      "title": "Task",
+                      "type": "string",
+                      "x-ms-content-hint": "TEXT",
+                      "x-ms-dynamically-added": true
+                    }
+                  },
+                  "additionalProperties": {}
+                },
+                "statusCode": 200,
+                "body": {
+                  "success": true,
+                  "canceled": true,
+                  "task": "@{outputs('Compose_-_Task_Response')}"
+                }
+              }
+            },
+            "Compose_-_Task_Response": {
+              "runAfter": {
+                "Update_item_-_Task": [
+                  "Succeeded"
+                ]
+              },
+              "type": "Compose",
+              "inputs": {
+                "ID": "@{outputs('Update_item_-_Task')?['body/ID']}",
+                "task_level": "@{outputs('Update_item_-_Task')?['body/task_level']}",
+                "task_name": "@{outputs('Update_item_-_Task')?['body/task_name']}",
+                "task_duration": "@{outputs('Update_item_-_Task')?['body/task_duration']}",
+                "ID_GrandParent_Lookup": "@{outputs('Update_item_-_Task')?['body/ID_GrandParent_Lookup']}",
+                "ID_Parent_Lookup": "@{outputs('Update_item_-_Task')?['body/ID_Parent_Lookup']}",
+                "ID_Priority": "@{outputs('Update_item_-_Task')?['body/ID_Priority']}",
+                "task_description": "@{outputs('Update_item_-_Task')?['body/task_description']}",
+                "plan_start_date": "@{outputs('Update_item_-_Task')?['body/plan_start_date']}",
+                "plan_finish_date": "@{outputs('Update_item_-_Task')?['body/plan_finish_date']}",
+                "is_task": "@outputs('Update_item_-_Task')?['body/is_task']",
+                "ID_Status": "@{outputs('Update_item_-_Task')?['body/ID_Status']}",
+                "ID_User_Task_Created_By": "@{outputs('Update_item_-_Task')?['body/ID_User_Task_Created_By']}",
+                "Created": "@{outputs('Update_item_-_Task')?['body/Created']}",
+                "actual_start_date": "@{outputs('Update_item_-_Task')?['body/actual_start_date']}",
+                "actual_finish_date": "@{outputs('Update_item_-_Task')?['body/actual_finish_date']}",
+                "completion_date": "@{outputs('Update_item_-_Task')?['body/completion_date']}",
+                "ID_User_Task_Started_By": "@{outputs('Update_item_-_Task')?['body/ID_User_Task_Started_By']}",
+                "ID_Parent_Lookup_plan_start_date": "@{outputs('Update_item_-_Task')?['body/ID_Parent_Lookup_x003a__x0020_pl']}",
+                "ID_Parent_Lookup_plan_finish_date": "@{outputs('Update_item_-_Task')?['body/ID_Parent_Lookup_x003a__x0020_pl0']}",
+                "ID_Parent_Lookup_actual_start_date": "@{outputs('Update_item_-_Task')?['body/ID_Parent_Lookup_x003a__x0020_ac']}",
+                "ID_Parent_Lookup_actual_finish_date": "@{outputs('Update_item_-_Task')?['body/ID_Parent_Lookup_x003a__x0020_ac0']}",
+                "ID_Parent_Lookup_completion_date": "@{outputs('Update_item_-_Task')?['body/ID_Parent_Lookup_x003a__x0020_co']}",
+                "ID_Task_Scheduler": "@{outputs('Update_item_-_Task')?['body/ID_Task_Scheduler']}",
+                "reminder_date": "@{outputs('Update_item_-_Task')?['body/reminder_date']}",
+                "Modified": "@{outputs('Update_item_-_Task')?['body/Modified']}",
+                "approval_type": "@{outputs('Update_item_-_Task')?['body/approval_type']}",
+                "approval_rule": "@{outputs('Update_item_-_Task')?['body/approval_rule']}",
+                "ID_User_Task_Finished_By": "@{outputs('Update_item_-_Task')?['body/ID_User_Task_Finished_By']}"
+              }
+            }
+          },
+          "runAfter": {
+            "Get_items_-_Check_ID_Parent_Lookup_or_ID_GrandParent_Lookup": [
+              "Succeeded"
+            ]
+          },
+          "else": {
+            "actions": {
+              "Respond_to_a_Power_App_or_flow_-_Can't_Canceled": {
+                "type": "Response",
+                "kind": "PowerApp",
+                "inputs": {
+                  "schema": {
+                    "type": "object",
+                    "properties": {
+                      "success": {
+                        "title": "Success",
+                        "type": "boolean",
+                        "x-ms-content-hint": "BOOLEAN",
+                        "x-ms-dynamically-added": true
+                      },
+                      "canceled": {
+                        "title": "Canceled",
+                        "type": "boolean",
+                        "x-ms-content-hint": "BOOLEAN",
+                        "x-ms-dynamically-added": true
+                      },
+                      "task": {
+                        "title": "Task",
+                        "type": "string",
+                        "x-ms-content-hint": "TEXT",
+                        "x-ms-dynamically-added": true
+                      }
+                    },
+                    "additionalProperties": {}
+                  },
+                  "statusCode": 200,
+                  "body": {
+                    "success": true,
+                    "canceled": false
+                  }
+                }
+              }
+            }
+          },
+          "expression": {
+            "and": [
+              {
+                "equals": [
+                  "@empty(outputs('Get_items_-_Check_ID_Parent_Lookup_or_ID_GrandParent_Lookup')?['body/value'])",
+                  true
+                ]
+              }
+            ]
+          },
+          "type": "If"
+        }
+      }
+    },
+    "templateName": null
+  },
+  "schemaVersion": "1.0.0.0"
+}

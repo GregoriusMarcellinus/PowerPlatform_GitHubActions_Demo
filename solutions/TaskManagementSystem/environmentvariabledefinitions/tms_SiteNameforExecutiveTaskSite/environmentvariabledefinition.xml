@@ -1,0 +1,11 @@
+<environmentvariabledefinition schemaname="tms_SiteNameforExecutiveTaskSite">
+  <defaultvalue>Executive Task</defaultvalue>
+  <displayname default="Site Name for Executive Task Site">
+    <label description="Site Name for Executive Task Site" languagecode="1033" />
+  </displayname>
+  <introducedversion>1.0.0.26</introducedversion>
+  <iscustomizable>1</iscustomizable>
+  <isrequired>0</isrequired>
+  <secretstore>0</secretstore>
+  <type>100000000</type>
+</environmentvariabledefinition>

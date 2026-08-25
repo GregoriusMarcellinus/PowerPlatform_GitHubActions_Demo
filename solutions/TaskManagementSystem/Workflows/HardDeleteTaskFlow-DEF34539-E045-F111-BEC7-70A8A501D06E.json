@@ -1,0 +1,407 @@
+{
+  "properties": {
+    "connectionReferences": {
+      "shared_sharepointonline-1": {
+        "runtimeSource": "embedded",
+        "connection": {
+          "connectionReferenceLogicalName": "tms_SharePointAdmin"
+        },
+        "api": {
+          "name": "shared_sharepointonline"
+        }
+      }
+    },
+    "definition": {
+      "$schema": "https://schema.management.azure.com/providers/Microsoft.Logic/schemas/2016-06-01/workflowdefinition.json#",
+      "contentVersion": "1.0.0.0",
+      "parameters": {
+        "$authentication": {
+          "defaultValue": {},
+          "type": "SecureObject"
+        },
+        "$connections": {
+          "defaultValue": {},
+          "type": "Object"
+        },
+        "Task Management Site (tms_TaskManagementSite)": {
+          "defaultValue": "https://m365b467805.sharepoint.com/sites/TaskManagement",
+          "type": "String",
+          "metadata": {
+            "schemaName": "tms_TaskManagementSite"
+          }
+        },
+        "Task List (tms_TaskList)": {
+          "defaultValue": "2b09fc89-2c29-499b-bca9-cd2d764eaf3a",
+          "type": "String",
+          "metadata": {
+            "schemaName": "tms_TaskList"
+          }
+        },
+        "Checklist List (tms_ChecklistList)": {
+          "defaultValue": "c0d32f4f-d4e8-43b9-8445-0ecd9b904004",
+          "type": "String",
+          "metadata": {
+            "schemaName": "tms_ChecklistList"
+          }
+        },
+        "Comment List (tms_CommentList)": {
+          "defaultValue": "2b2af842-5948-4f79-9851-52c7c4b07c94",
+          "type": "String",
+          "metadata": {
+            "schemaName": "tms_CommentList"
+          }
+        },
+        "Task Assigned To Division List (tms_TaskAssignedToDivisionList)": {
+          "defaultValue": "e59fc654-0a6c-469d-9edb-10b069db7077",
+          "type": "String",
+          "metadata": {
+            "schemaName": "tms_TaskAssignedToDivisionList"
+          }
+        },
+        "Task Assigned To Person List (tms_TaskAssignedToPersonList)": {
+          "defaultValue": "14f77253-8e43-4f56-9f1e-6e6b0ba1fb23",
+          "type": "String",
+          "metadata": {
+            "schemaName": "tms_TaskAssignedToPersonList"
+          }
+        },
+        "Approval List (tms_ApprovalList)": {
+          "defaultValue": "ad84ee0b-4df9-49ac-965f-7abadfff85f9",
+          "type": "String",
+          "metadata": {
+            "schemaName": "tms_ApprovalList"
+          }
+        }
+      },
+      "triggers": {
+        "manual": {
+          "metadata": {
+            "operationMetadataId": "7e7f91e2-77c9-4a60-8a86-61cde6dd9a65"
+          },
+          "type": "Request",
+          "kind": "PowerAppV2",
+          "inputs": {
+            "schema": {
+              "type": "object",
+              "properties": {
+                "number": {
+                  "description": "Please enter a number",
+                  "title": "ID_Task",
+                  "type": "number",
+                  "x-ms-content-hint": "NUMBER",
+                  "x-ms-dynamically-added": true
+                }
+              },
+              "required": [
+                "number"
+              ]
+            }
+          }
+        }
+      },
+      "actions": {
+        "Get_items_-_Checklist_List": {
+          "runAfter": {},
+          "type": "OpenApiConnection",
+          "inputs": {
+            "parameters": {
+              "dataset": "@parameters('Task Management Site (tms_TaskManagementSite)')",
+              "table": "@parameters('Checklist List (tms_ChecklistList)')",
+              "$filter": "ID_Task/Id eq @{triggerBody()?['number']}",
+              "$top": 1000
+            },
+            "host": {
+              "apiId": "/providers/Microsoft.PowerApps/apis/shared_sharepointonline",
+              "operationId": "GetItems",
+              "connectionName": "shared_sharepointonline-1"
+            }
+          }
+        },
+        "Get_items_-_Comment_List": {
+          "runAfter": {},
+          "type": "OpenApiConnection",
+          "inputs": {
+            "parameters": {
+              "dataset": "@parameters('Task Management Site (tms_TaskManagementSite)')",
+              "table": "@parameters('Comment List (tms_CommentList)')",
+              "$filter": "ID_Task/Id eq @{triggerBody()?['number']}",
+              "$top": 1000
+            },
+            "host": {
+              "apiId": "/providers/Microsoft.PowerApps/apis/shared_sharepointonline",
+              "operationId": "GetItems",
+              "connectionName": "shared_sharepointonline-1"
+            }
+          }
+        },
+        "For_each": {
+          "foreach": "@outputs('Get_items_-_Checklist_List')?['body/value']",
+          "actions": {
+            "Delete_item_-_Checklist_List_Row": {
+              "type": "OpenApiConnection",
+              "inputs": {
+                "parameters": {
+                  "dataset": "@parameters('Task Management Site (tms_TaskManagementSite)')",
+                  "table": "@parameters('Checklist List (tms_ChecklistList)')",
+                  "id": "@item()?['ID']"
+                },
+                "host": {
+                  "apiId": "/providers/Microsoft.PowerApps/apis/shared_sharepointonline",
+                  "operationId": "DeleteItem",
+                  "connectionName": "shared_sharepointonline-1"
+                }
+              }
+            }
+          },
+          "runAfter": {
+            "Get_items_-_Checklist_List": [
+              "Succeeded"
+            ]
+          },
+          "type": "Foreach",
+          "runtimeConfiguration": {
+            "concurrency": {
+              "repetitions": 5
+            }
+          }
+        },
+        "For_each_1": {
+          "foreach": "@outputs('Get_items_-_Comment_List')?['body/value']",
+          "actions": {
+            "Delete_item_-_Comment_List_Row": {
+              "type": "OpenApiConnection",
+              "inputs": {
+                "parameters": {
+                  "dataset": "@parameters('Task Management Site (tms_TaskManagementSite)')",
+                  "table": "@parameters('Comment List (tms_CommentList)')",
+                  "id": "@item()?['ID']"
+                },
+                "host": {
+                  "apiId": "/providers/Microsoft.PowerApps/apis/shared_sharepointonline",
+                  "operationId": "DeleteItem",
+                  "connectionName": "shared_sharepointonline-1"
+                }
+              }
+            }
+          },
+          "runAfter": {
+            "Get_items_-_Comment_List": [
+              "Succeeded"
+            ]
+          },
+          "type": "Foreach",
+          "runtimeConfiguration": {
+            "concurrency": {
+              "repetitions": 5
+            }
+          }
+        },
+        "Get_items_-_Task_Assgined_To_Person_List": {
+          "runAfter": {},
+          "type": "OpenApiConnection",
+          "inputs": {
+            "parameters": {
+              "dataset": "@parameters('Task Management Site (tms_TaskManagementSite)')",
+              "table": "@parameters('Task Assigned To Person List (tms_TaskAssignedToPersonList)')",
+              "$filter": "ID_Task/Id eq @{triggerBody()?['number']}",
+              "$top": 1000
+            },
+            "host": {
+              "apiId": "/providers/Microsoft.PowerApps/apis/shared_sharepointonline",
+              "operationId": "GetItems",
+              "connectionName": "shared_sharepointonline-1"
+            }
+          }
+        },
+        "For_each_2": {
+          "foreach": "@outputs('Get_items_-_Task_Assgined_To_Person_List')?['body/value']",
+          "actions": {
+            "Delete_item_-_Task_Assigned_To_Person_List_Row": {
+              "type": "OpenApiConnection",
+              "inputs": {
+                "parameters": {
+                  "dataset": "@parameters('Task Management Site (tms_TaskManagementSite)')",
+                  "table": "@parameters('Task Assigned To Person List (tms_TaskAssignedToPersonList)')",
+                  "id": "@item()?['ID']"
+                },
+                "host": {
+                  "apiId": "/providers/Microsoft.PowerApps/apis/shared_sharepointonline",
+                  "operationId": "DeleteItem",
+                  "connectionName": "shared_sharepointonline-1"
+                }
+              }
+            }
+          },
+          "runAfter": {
+            "Get_items_-_Task_Assgined_To_Person_List": [
+              "Succeeded"
+            ]
+          },
+          "type": "Foreach",
+          "runtimeConfiguration": {
+            "concurrency": {
+              "repetitions": 5
+            }
+          }
+        },
+        "Get_items_-_Task_Assgined_To_Division_List": {
+          "runAfter": {},
+          "type": "OpenApiConnection",
+          "inputs": {
+            "parameters": {
+              "dataset": "@parameters('Task Management Site (tms_TaskManagementSite)')",
+              "table": "@parameters('Task Assigned To Division List (tms_TaskAssignedToDivisionList)')",
+              "$filter": "ID_Task/Id eq @{triggerBody()?['number']}",
+              "$top": 1000
+            },
+            "host": {
+              "apiId": "/providers/Microsoft.PowerApps/apis/shared_sharepointonline",
+              "operationId": "GetItems",
+              "connectionName": "shared_sharepointonline-1"
+            }
+          }
+        },
+        "For_each_3": {
+          "foreach": "@outputs('Get_items_-_Task_Assgined_To_Division_List')?['body/value']",
+          "actions": {
+            "Delete_item_-_Task_Assigned_To_Division_List_Row": {
+              "type": "OpenApiConnection",
+              "inputs": {
+                "parameters": {
+                  "dataset": "@parameters('Task Management Site (tms_TaskManagementSite)')",
+                  "table": "@parameters('Task Assigned To Division List (tms_TaskAssignedToDivisionList)')",
+                  "id": "@item()?['ID']"
+                },
+                "host": {
+                  "apiId": "/providers/Microsoft.PowerApps/apis/shared_sharepointonline",
+                  "operationId": "DeleteItem",
+                  "connectionName": "shared_sharepointonline-1"
+                }
+              }
+            }
+          },
+          "runAfter": {
+            "Get_items_-_Task_Assgined_To_Division_List": [
+              "Succeeded"
+            ]
+          },
+          "type": "Foreach",
+          "runtimeConfiguration": {
+            "concurrency": {
+              "repetitions": 5
+            }
+          }
+        },
+        "Delete_item_-_Task_List": {
+          "runAfter": {
+            "For_each": [
+              "Succeeded"
+            ],
+            "For_each_1": [
+              "Succeeded"
+            ],
+            "For_each_2": [
+              "Succeeded"
+            ],
+            "For_each_3": [
+              "Succeeded"
+            ],
+            "For_each_4": [
+              "Succeeded"
+            ]
+          },
+          "type": "OpenApiConnection",
+          "inputs": {
+            "parameters": {
+              "dataset": "@parameters('Task Management Site (tms_TaskManagementSite)')",
+              "table": "@parameters('Task List (tms_TaskList)')",
+              "id": "@triggerBody()?['number']"
+            },
+            "host": {
+              "apiId": "/providers/Microsoft.PowerApps/apis/shared_sharepointonline",
+              "operationId": "DeleteItem",
+              "connectionName": "shared_sharepointonline-1"
+            }
+          }
+        },
+        "Respond_to_a_Power_App_or_flow_-_Canceled": {
+          "runAfter": {
+            "Delete_item_-_Task_List": [
+              "Succeeded"
+            ]
+          },
+          "type": "Response",
+          "kind": "PowerApp",
+          "inputs": {
+            "schema": {
+              "type": "object",
+              "properties": {
+                "success": {
+                  "title": "Success",
+                  "type": "boolean",
+                  "x-ms-content-hint": "BOOLEAN",
+                  "x-ms-dynamically-added": true
+                }
+              },
+              "additionalProperties": {}
+            },
+            "statusCode": 200,
+            "body": {
+              "success": true
+            }
+          }
+        },
+        "Get_items_-_Task_Approval": {
+          "runAfter": {},
+          "type": "OpenApiConnection",
+          "inputs": {
+            "parameters": {
+              "dataset": "@parameters('Task Management Site (tms_TaskManagementSite)')",
+              "table": "@parameters('Approval List (tms_ApprovalList)')",
+              "$filter": "ID_Task/Id eq @{triggerBody()?['number']}",
+              "$top": 1000
+            },
+            "host": {
+              "apiId": "/providers/Microsoft.PowerApps/apis/shared_sharepointonline",
+              "operationId": "GetItems",
+              "connectionName": "shared_sharepointonline-1"
+            }
+          }
+        },
+        "For_each_4": {
+          "foreach": "@outputs('Get_items_-_Task_Approval')?['body/value']",
+          "actions": {
+            "Delete_item_-_Task_Assigned_To_Division_List_Row_1": {
+              "type": "OpenApiConnection",
+              "inputs": {
+                "parameters": {
+                  "dataset": "@parameters('Task Management Site (tms_TaskManagementSite)')",
+                  "table": "@parameters('Approval List (tms_ApprovalList)')",
+                  "id": "@item()?['ID']"
+                },
+                "host": {
+                  "apiId": "/providers/Microsoft.PowerApps/apis/shared_sharepointonline",
+                  "operationId": "DeleteItem",
+                  "connectionName": "shared_sharepointonline-1"
+                }
+              }
+            }
+          },
+          "runAfter": {
+            "Get_items_-_Task_Approval": [
+              "Succeeded"
+            ]
+          },
+          "type": "Foreach",
+          "runtimeConfiguration": {
+            "concurrency": {
+              "repetitions": 5
+            }
+          }
+        }
+      }
+    },
+    "templateName": null
+  },
+  "schemaVersion": "1.0.0.0"
+}

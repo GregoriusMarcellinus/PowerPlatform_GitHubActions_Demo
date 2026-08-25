@@ -1,0 +1,15 @@
+<environmentvariabledefinition schemaname="tms_TaskAssignedToDivisionList">
+  <apiid>/providers/microsoft.powerapps/apis/shared_sharepointonline</apiid>
+  <displayname default="Task Assigned To Division List">
+    <label description="Task Assigned To Division List" languagecode="1033" />
+  </displayname>
+  <introducedversion>1.0.0.26</introducedversion>
+  <iscustomizable>1</iscustomizable>
+  <isrequired>0</isrequired>
+  <parameterkey>table</parameterkey>
+  <parentdefinitionid>
+    <schemaname>tms_TaskManagementSite</schemaname>
+  </parentdefinitionid>
+  <secretstore>0</secretstore>
+  <type>100000004</type>
+</environmentvariabledefinition>

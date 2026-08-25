@@ -1,0 +1,1506 @@
+{
+  "properties": {
+    "connectionReferences": {
+      "shared_sharepointonline": {
+        "runtimeSource": "embedded",
+        "connection": {
+          "connectionReferenceLogicalName": "tms_SharePointAdmin"
+        },
+        "api": {
+          "name": "shared_sharepointonline"
+        }
+      }
+    },
+    "definition": {
+      "$schema": "https://schema.management.azure.com/providers/Microsoft.Logic/schemas/2016-06-01/workflowdefinition.json#",
+      "contentVersion": "1.0.0.0",
+      "parameters": {
+        "$authentication": {
+          "defaultValue": {},
+          "type": "SecureObject"
+        },
+        "$connections": {
+          "defaultValue": {},
+          "type": "Object"
+        },
+        "Task Management Site (tms_TaskManagementSite)": {
+          "defaultValue": "https://m365x42752428.sharepoint.com/sites/TaskManagement",
+          "type": "String",
+          "metadata": {
+            "schemaName": "tms_TaskManagementSite"
+          }
+        },
+        "Working Y2026 Document Library (tms_WorkingY2026DocumentLibrary)": {
+          "defaultValue": "049d6b68-5474-4406-ae85-2e11e820b9c5",
+          "type": "String",
+          "metadata": {
+            "schemaName": "tms_WorkingY2026DocumentLibrary"
+          }
+        },
+        "Executive Task Site (tms_ExecutiveTaskSite)": {
+          "defaultValue": "https://m365x42752428.sharepoint.com/sites/ExecutiveTask",
+          "type": "String",
+          "metadata": {
+            "schemaName": "tms_ExecutiveTaskSite"
+          }
+        },
+        "Executive Working Y2026 Document Library (tms_ExecutiveWorkingY2026DocumentLibrary)": {
+          "defaultValue": "1a30b91c-017d-4a06-af12-fdee0cb2b222",
+          "type": "String",
+          "metadata": {
+            "schemaName": "tms_ExecutiveWorkingY2026DocumentLibrary"
+          }
+        },
+        "Document Library Name for Executive Working (tms_DocumentLibraryNameforExecutiveWorking)": {
+          "defaultValue": "Executive Working Y2026",
+          "type": "String",
+          "metadata": {
+            "schemaName": "tms_DocumentLibraryNameforExecutiveWorking"
+          }
+        },
+        "Document Library Name for Task Responses Template (tms_DocumentLibraryNameforTaskResponsesTemplate)": {
+          "defaultValue": "Task Responses Template",
+          "type": "String",
+          "metadata": {
+            "schemaName": "tms_DocumentLibraryNameforTaskResponsesTemplate"
+          }
+        },
+        "Document Library Name for Working (tms_DocumentLibraryNameforWorking)": {
+          "defaultValue": "Working Y2026",
+          "type": "String",
+          "metadata": {
+            "schemaName": "tms_DocumentLibraryNameforWorking"
+          }
+        }
+      },
+      "triggers": {
+        "manual": {
+          "metadata": {
+            "operationMetadataId": "55cb7f3f-455b-4403-83c9-465d31fb300d"
+          },
+          "type": "Request",
+          "kind": "PowerAppV2",
+          "inputs": {
+            "schema": {
+              "type": "object",
+              "properties": {
+                "number": {
+                  "description": "Please enter a number",
+                  "title": "ID_Task",
+                  "type": "number",
+                  "x-ms-content-hint": "NUMBER",
+                  "x-ms-dynamically-added": true
+                },
+                "number_1": {
+                  "description": "Please enter a number",
+                  "title": "FileUploadedById",
+                  "type": "number",
+                  "x-ms-content-hint": "NUMBER",
+                  "x-ms-dynamically-added": true
+                },
+                "text": {
+                  "description": "Please enter your input",
+                  "title": "TaskName",
+                  "type": "string",
+                  "x-ms-content-hint": "TEXT",
+                  "x-ms-dynamically-added": true
+                },
+                "text_1": {
+                  "description": "Please enter your input",
+                  "title": "FileType",
+                  "type": "string",
+                  "x-ms-content-hint": "TEXT",
+                  "x-ms-dynamically-added": true
+                },
+                "number_2": {
+                  "description": "Please enter a number",
+                  "title": "TaskFromUserLevel",
+                  "type": "number",
+                  "x-ms-content-hint": "NUMBER",
+                  "x-ms-dynamically-added": true
+                },
+                "date": {
+                  "description": "Please enter or select a date (YYYY-MM-DD)",
+                  "format": "date",
+                  "title": "Task_Created",
+                  "type": "string",
+                  "x-ms-content-hint": "DATE",
+                  "x-ms-dynamically-added": true
+                },
+                "email": {
+                  "description": "Enter an email address.",
+                  "format": "email",
+                  "title": "FileUploadedByEmail",
+                  "type": "string",
+                  "x-ms-content-hint": "EMAIL",
+                  "x-ms-dynamically-added": true
+                }
+              },
+              "required": [
+                "number",
+                "number_1",
+                "text",
+                "text_1",
+                "number_2",
+                "date",
+                "email"
+              ]
+            }
+          }
+        }
+      },
+      "actions": {
+        "Condition_Is_CEO_Task": {
+          "actions": {
+            "Get_files_(properties_only)_-_Get_Folder_Name_-_CEO_Task": {
+              "type": "OpenApiConnection",
+              "inputs": {
+                "parameters": {
+                  "dataset": "@parameters('Executive Task Site (tms_ExecutiveTaskSite)')",
+                  "table": "@parameters('Executive Working Y2026 Document Library (tms_ExecutiveWorkingY2026DocumentLibrary)')",
+                  "$filter": "ID_Task eq @{triggerBody()?['number']}"
+                },
+                "host": {
+                  "apiId": "/providers/Microsoft.PowerApps/apis/shared_sharepointonline",
+                  "operationId": "GetFileItems",
+                  "connectionName": "shared_sharepointonline"
+                }
+              }
+            },
+            "Condition_-_Folder_Not_Created_Yet_1": {
+              "actions": {
+                "Create_new_folder_-_Task_Folder_-_CEO_Task": {
+                  "type": "OpenApiConnection",
+                  "inputs": {
+                    "parameters": {
+                      "dataset": "@parameters('Executive Task Site (tms_ExecutiveTaskSite)')",
+                      "table": "@parameters('Executive Working Y2026 Document Library (tms_ExecutiveWorkingY2026DocumentLibrary)')",
+                      "parameters/path": "@concat(\r\n    toUpper(formatDateTime(triggerBody()?['date'],'ddMMMyyyy')),\r\n    '_T',\r\n    substring(\r\n        concat('00000', string(triggerBody()?['number'])),\r\n        sub(length(concat('00000', string(triggerBody()?['number']))), 5),\r\n        5\r\n    ),\r\n    '_',\r\n    triggerBody()?['text']\r\n)"
+                    },
+                    "host": {
+                      "apiId": "/providers/Microsoft.PowerApps/apis/shared_sharepointonline",
+                      "operationId": "CreateNewFolder",
+                      "connectionName": "shared_sharepointonline"
+                    }
+                  }
+                },
+                "Update_file_properties_-_ID_Task_Lookup_Column_1": {
+                  "runAfter": {
+                    "Create_new_folder_-_Task_Folder_-_CEO_Task": [
+                      "Succeeded"
+                    ]
+                  },
+                  "type": "OpenApiConnection",
+                  "inputs": {
+                    "parameters": {
+                      "dataset": "@parameters('Executive Task Site (tms_ExecutiveTaskSite)')",
+                      "table": "@parameters('Executive Working Y2026 Document Library (tms_ExecutiveWorkingY2026DocumentLibrary)')",
+                      "id": "@outputs('Create_new_folder_-_Task_Folder_-_CEO_Task')?['body/ID']",
+                      "item/ID_Task": "@triggerBody()?['number']"
+                    },
+                    "host": {
+                      "apiId": "/providers/Microsoft.PowerApps/apis/shared_sharepointonline",
+                      "operationId": "PatchFileItem",
+                      "connectionName": "shared_sharepointonline"
+                    }
+                  }
+                },
+                "Switch_-_File_Type_2": {
+                  "runAfter": {
+                    "Update_file_properties_-_ID_Task_Lookup_Column_1": [
+                      "Succeeded"
+                    ]
+                  },
+                  "cases": {
+                    "word_2": {
+                      "case": "word",
+                      "actions": {
+                        "Copy_file_-_word_-_CEO_Task": {
+                          "metadata": {
+                            "%252fTask%2bResponses%2bTemplate%252fResponse.docx": "/Task Responses Template/Response.docx"
+                          },
+                          "type": "OpenApiConnection",
+                          "inputs": {
+                            "parameters": {
+                              "dataset": "@parameters('Task Management Site (tms_TaskManagementSite)')",
+                              "parameters/sourceFileId": "/@{parameters('Document Library Name for Task Responses Template (tms_DocumentLibraryNameforTaskResponsesTemplate)')}/Response.docx",
+                              "parameters/destinationDataset": "@parameters('Executive Task Site (tms_ExecutiveTaskSite)')",
+                              "parameters/destinationFolderPath": "@{parameters('Document Library Name for Executive Working (tms_DocumentLibraryNameforExecutiveWorking)')}/@{outputs('Create_new_folder_-_Task_Folder_-_CEO_Task')?['body/{Name}']}",
+                              "parameters/nameConflictBehavior": 0
+                            },
+                            "host": {
+                              "apiId": "/providers/Microsoft.PowerApps/apis/shared_sharepointonline",
+                              "operationId": "CopyFileAsync",
+                              "connectionName": "shared_sharepointonline"
+                            }
+                          }
+                        },
+                        "Respond_to_a_Power_App_or_flow_-_word_2": {
+                          "runAfter": {
+                            "Send_an_HTTP_request_to_SharePoint_-_word_-_CEO_Task": [
+                              "Succeeded"
+                            ]
+                          },
+                          "type": "Response",
+                          "kind": "PowerApp",
+                          "inputs": {
+                            "schema": {
+                              "type": "object",
+                              "properties": {
+                                "success": {
+                                  "title": "Success",
+                                  "type": "boolean",
+                                  "x-ms-content-hint": "BOOLEAN",
+                                  "x-ms-dynamically-added": true
+                                },
+                                "id_file": {
+                                  "title": "ID_File",
+                                  "type": "number",
+                                  "x-ms-content-hint": "NUMBER",
+                                  "x-ms-dynamically-added": true
+                                }
+                              },
+                              "additionalProperties": {}
+                            },
+                            "statusCode": 200,
+                            "body": {
+                              "success": true,
+                              "id_file": "@outputs('Copy_file_-_word_-_CEO_Task')?['body/ItemId']"
+                            }
+                          }
+                        },
+                        "Send_an_HTTP_request_to_SharePoint_-_word_-_CEO_Task": {
+                          "runAfter": {
+                            "Copy_file_-_word_-_CEO_Task": [
+                              "Succeeded"
+                            ]
+                          },
+                          "type": "OpenApiConnection",
+                          "inputs": {
+                            "parameters": {
+                              "dataset": "@parameters('Executive Task Site (tms_ExecutiveTaskSite)')",
+                              "parameters/method": "POST",
+                              "parameters/uri": "_api/web/lists/GetbyTitle('@{parameters('Document Library Name for Executive Working (tms_DocumentLibraryNameforExecutiveWorking)')}')/items(@{outputs('Copy_file_-_word_-_CEO_Task')?['body/ItemId']})/validateUpdateListItem",
+                              "parameters/headers": {
+                                "Accept": "application/json;odata=verbose",
+                                "Content-Type": "application/json;odata=verbose"
+                              },
+                              "parameters/body": "{\n  \"formValues\": [\n    {\n      \"FieldName\": \"FileLeafRef\",\n      \"FieldValue\": \"@{concat(\n          'T',\n          substring(\n              concat('00000', string(triggerBody()?['number'])),\n              sub(length(concat('00000', string(triggerBody()?['number']))), 5),\n              5\n          ),\n          '_Response_',\n          triggerBody()?['text'],\n          '.docx'\n      )}\"\n    },\n    {\n      \"FieldName\": \"File_Uploaded_By\",\n      \"FieldValue\": \"@{triggerBody()?['email']}\"\n    }\n  ],\n  \"bNewDocumentUpdate\": true\n}"
+                            },
+                            "host": {
+                              "apiId": "/providers/Microsoft.PowerApps/apis/shared_sharepointonline",
+                              "operationId": "HttpRequest",
+                              "connectionName": "shared_sharepointonline"
+                            }
+                          }
+                        }
+                      }
+                    },
+                    "excel_2": {
+                      "case": "excel",
+                      "actions": {
+                        "Copy_file_-_excel_-_CEO_Task": {
+                          "metadata": {
+                            "%252fTask%2bResponses%2bTemplate%252fResponse.docx": "/Task Responses Template/Response.docx",
+                            "%252fTask%2bResponses%2bTemplate%252fResponse.xlsx": "/Task Responses Template/Response.xlsx"
+                          },
+                          "type": "OpenApiConnection",
+                          "inputs": {
+                            "parameters": {
+                              "dataset": "@parameters('Task Management Site (tms_TaskManagementSite)')",
+                              "parameters/sourceFileId": "/@{parameters('Document Library Name for Task Responses Template (tms_DocumentLibraryNameforTaskResponsesTemplate)')}/Response.xlsx",
+                              "parameters/destinationDataset": "@parameters('Executive Task Site (tms_ExecutiveTaskSite)')",
+                              "parameters/destinationFolderPath": "@{parameters('Document Library Name for Executive Working (tms_DocumentLibraryNameforExecutiveWorking)')}/@{outputs('Create_new_folder_-_Task_Folder_-_CEO_Task')?['body/{Name}']}",
+                              "parameters/nameConflictBehavior": 0
+                            },
+                            "host": {
+                              "apiId": "/providers/Microsoft.PowerApps/apis/shared_sharepointonline",
+                              "operationId": "CopyFileAsync",
+                              "connectionName": "shared_sharepointonline"
+                            }
+                          }
+                        },
+                        "Respond_to_a_Power_App_or_flow_-_excel_2": {
+                          "runAfter": {
+                            "Send_an_HTTP_request_to_SharePoint_-_excel_-_CEO_Task": [
+                              "Succeeded"
+                            ]
+                          },
+                          "type": "Response",
+                          "kind": "PowerApp",
+                          "inputs": {
+                            "schema": {
+                              "type": "object",
+                              "properties": {
+                                "success": {
+                                  "title": "Success",
+                                  "type": "boolean",
+                                  "x-ms-content-hint": "BOOLEAN",
+                                  "x-ms-dynamically-added": true
+                                },
+                                "id_file": {
+                                  "title": "ID_File",
+                                  "type": "number",
+                                  "x-ms-content-hint": "NUMBER",
+                                  "x-ms-dynamically-added": true
+                                }
+                              },
+                              "additionalProperties": {}
+                            },
+                            "statusCode": 200,
+                            "body": {
+                              "success": true,
+                              "id_file": "@outputs('Copy_file_-_excel_-_CEO_Task')?['body/ItemId']"
+                            }
+                          }
+                        },
+                        "Send_an_HTTP_request_to_SharePoint_-_excel_-_CEO_Task": {
+                          "runAfter": {
+                            "Copy_file_-_excel_-_CEO_Task": [
+                              "Succeeded"
+                            ]
+                          },
+                          "type": "OpenApiConnection",
+                          "inputs": {
+                            "parameters": {
+                              "dataset": "@parameters('Executive Task Site (tms_ExecutiveTaskSite)')",
+                              "parameters/method": "POST",
+                              "parameters/uri": "_api/web/lists/GetbyTitle('@{parameters('Document Library Name for Executive Working (tms_DocumentLibraryNameforExecutiveWorking)')}')/items(@{outputs('Copy_file_-_excel_-_CEO_Task')?['body/ItemId']})/validateUpdateListItem",
+                              "parameters/headers": {
+                                "Accept": "application/json;odata=verbose",
+                                "Content-Type": "application/json;odata=verbose"
+                              },
+                              "parameters/body": "{\n  \"formValues\": [\n    {\n      \"FieldName\": \"FileLeafRef\",\n      \"FieldValue\": \"@{concat(\r\n          'T',\r\n          substring(\r\n              concat('00000', string(triggerBody()?['number'])),\r\n              sub(length(concat('00000', string(triggerBody()?['number']))), 5),\r\n              5\r\n          ),\r\n          '_Response_',\r\n          triggerBody()?['text'],\r\n          '.xlsx'\r\n      )}\"\n    },\n    {\n      \"FieldName\": \"File_Uploaded_By\",\n      \"FieldValue\": \"@{triggerBody()?['email']}\"\n    }\n  ],\n  \"bNewDocumentUpdate\": true\n}"
+                            },
+                            "host": {
+                              "apiId": "/providers/Microsoft.PowerApps/apis/shared_sharepointonline",
+                              "operationId": "HttpRequest",
+                              "connectionName": "shared_sharepointonline"
+                            }
+                          }
+                        }
+                      }
+                    },
+                    "onenote_2": {
+                      "case": "onenote",
+                      "actions": {
+                        "Copy_folder_-_onenote_-_CEO_Task": {
+                          "metadata": {
+                            "%252fTask%2bResponses%2bTemplate%252fResponse": "/Task Responses Template/Response"
+                          },
+                          "type": "OpenApiConnection",
+                          "inputs": {
+                            "parameters": {
+                              "dataset": "@parameters('Task Management Site (tms_TaskManagementSite)')",
+                              "parameters/sourceFolderId": "/@{parameters('Document Library Name for Task Responses Template (tms_DocumentLibraryNameforTaskResponsesTemplate)')}/Response",
+                              "parameters/destinationDataset": "@parameters('Executive Task Site (tms_ExecutiveTaskSite)')",
+                              "parameters/destinationFolderPath": "@{parameters('Document Library Name for Executive Working (tms_DocumentLibraryNameforExecutiveWorking)')}/@{outputs('Create_new_folder_-_Task_Folder_-_CEO_Task')?['body/{Name}']}",
+                              "parameters/nameConflictBehavior": 0
+                            },
+                            "host": {
+                              "apiId": "/providers/Microsoft.PowerApps/apis/shared_sharepointonline",
+                              "operationId": "CopyFolderAsync",
+                              "connectionName": "shared_sharepointonline"
+                            }
+                          }
+                        },
+                        "Respond_to_a_Power_App_or_flow_-_onenote_2": {
+                          "runAfter": {
+                            "Send_an_HTTP_request_to_SharePoint_-_onenote_-_CEO_Task": [
+                              "Succeeded"
+                            ]
+                          },
+                          "type": "Response",
+                          "kind": "PowerApp",
+                          "inputs": {
+                            "schema": {
+                              "type": "object",
+                              "properties": {
+                                "success": {
+                                  "title": "Success",
+                                  "type": "boolean",
+                                  "x-ms-content-hint": "BOOLEAN",
+                                  "x-ms-dynamically-added": true
+                                },
+                                "id_file": {
+                                  "title": "ID_File",
+                                  "type": "number",
+                                  "x-ms-content-hint": "NUMBER",
+                                  "x-ms-dynamically-added": true
+                                }
+                              },
+                              "additionalProperties": {}
+                            },
+                            "statusCode": 200,
+                            "body": {
+                              "success": true,
+                              "id_file": "@outputs('Copy_folder_-_onenote_-_CEO_Task')?['body/ItemId']"
+                            }
+                          }
+                        },
+                        "Send_an_HTTP_request_to_SharePoint_-_onenote_-_CEO_Task": {
+                          "runAfter": {
+                            "Copy_folder_-_onenote_-_CEO_Task": [
+                              "Succeeded"
+                            ]
+                          },
+                          "type": "OpenApiConnection",
+                          "inputs": {
+                            "parameters": {
+                              "dataset": "@parameters('Executive Task Site (tms_ExecutiveTaskSite)')",
+                              "parameters/method": "POST",
+                              "parameters/uri": "_api/web/lists/GetbyTitle('@{parameters('Document Library Name for Executive Working (tms_DocumentLibraryNameforExecutiveWorking)')}')/items(@{outputs('Copy_folder_-_onenote_-_CEO_Task')?['body/ItemId']})/validateUpdateListItem",
+                              "parameters/headers": {
+                                "Accept": "application/json;odata=verbose",
+                                "Content-Type": "application/json;odata=verbose"
+                              },
+                              "parameters/body": "{\n  \"formValues\": [\n    {\n      \"FieldName\": \"FileLeafRef\",\n      \"FieldValue\": \"@{concat(\r\n          'T',\r\n          substring(\r\n              concat('00000', string(triggerBody()?['number'])),\r\n              sub(length(concat('00000', string(triggerBody()?['number']))), 5),\r\n              5\r\n          ),\r\n          '_Response_',\r\n          triggerBody()?['text']\r\n      )}\"\n    },\n    {\n      \"FieldName\": \"File_Uploaded_By\",\n      \"FieldValue\": \"@{triggerBody()?['email']}\"\n    }\n  ],\n  \"bNewDocumentUpdate\": true\n}"
+                            },
+                            "host": {
+                              "apiId": "/providers/Microsoft.PowerApps/apis/shared_sharepointonline",
+                              "operationId": "HttpRequest",
+                              "connectionName": "shared_sharepointonline"
+                            }
+                          }
+                        }
+                      }
+                    }
+                  },
+                  "default": {
+                    "actions": {
+                      "Respond_to_a_Power_App_or_flow_-_failed_2": {
+                        "type": "Response",
+                        "kind": "PowerApp",
+                        "inputs": {
+                          "schema": {
+                            "type": "object",
+                            "properties": {
+                              "success": {
+                                "title": "Success",
+                                "type": "boolean",
+                                "x-ms-content-hint": "BOOLEAN",
+                                "x-ms-dynamically-added": true
+                              },
+                              "id_file": {
+                                "title": "ID_File",
+                                "type": "number",
+                                "x-ms-content-hint": "NUMBER",
+                                "x-ms-dynamically-added": true
+                              }
+                            },
+                            "additionalProperties": {}
+                          },
+                          "statusCode": 200,
+                          "body": {
+                            "success": false,
+                            "id_file": 0
+                          }
+                        }
+                      }
+                    }
+                  },
+                  "expression": "@triggerBody()?['text_1']",
+                  "type": "Switch"
+                }
+              },
+              "runAfter": {
+                "Get_files_(properties_only)_-_Get_Folder_Name_-_CEO_Task": [
+                  "Succeeded"
+                ]
+              },
+              "else": {
+                "actions": {
+                  "Switch_-_File_Type_3": {
+                    "cases": {
+                      "word_3": {
+                        "case": "word",
+                        "actions": {
+                          "Copy_file_-_word_-_CEO_Task_2": {
+                            "metadata": {
+                              "%252fTask%2bResponses%2bTemplate%252fResponse.docx": "/Task Responses Template/Response.docx"
+                            },
+                            "type": "OpenApiConnection",
+                            "inputs": {
+                              "parameters": {
+                                "dataset": "@parameters('Task Management Site (tms_TaskManagementSite)')",
+                                "parameters/sourceFileId": "/@{parameters('Document Library Name for Task Responses Template (tms_DocumentLibraryNameforTaskResponsesTemplate)')}/Response.docx",
+                                "parameters/destinationDataset": "@parameters('Executive Task Site (tms_ExecutiveTaskSite)')",
+                                "parameters/destinationFolderPath": "@{parameters('Document Library Name for Executive Working (tms_DocumentLibraryNameforExecutiveWorking)')}/@{first(outputs('Get_files_(properties_only)_-_Get_Folder_Name_-_CEO_Task')?['body/value'])?['{Name}']}",
+                                "parameters/nameConflictBehavior": 0
+                              },
+                              "host": {
+                                "apiId": "/providers/Microsoft.PowerApps/apis/shared_sharepointonline",
+                                "operationId": "CopyFileAsync",
+                                "connectionName": "shared_sharepointonline"
+                              }
+                            }
+                          },
+                          "Respond_to_a_Power_App_or_flow_-_word_3": {
+                            "runAfter": {
+                              "Send_an_HTTP_request_to_SharePoint_-_word_-_CEO_Task_2": [
+                                "Succeeded"
+                              ]
+                            },
+                            "type": "Response",
+                            "kind": "PowerApp",
+                            "inputs": {
+                              "schema": {
+                                "type": "object",
+                                "properties": {
+                                  "success": {
+                                    "title": "Success",
+                                    "type": "boolean",
+                                    "x-ms-content-hint": "BOOLEAN",
+                                    "x-ms-dynamically-added": true
+                                  },
+                                  "id_file": {
+                                    "title": "ID_File",
+                                    "type": "number",
+                                    "x-ms-content-hint": "NUMBER",
+                                    "x-ms-dynamically-added": true
+                                  }
+                                },
+                                "additionalProperties": {}
+                              },
+                              "statusCode": 200,
+                              "body": {
+                                "success": true,
+                                "id_file": "@outputs('Copy_file_-_word_-_CEO_Task_2')?['body/ItemId']"
+                              }
+                            }
+                          },
+                          "Send_an_HTTP_request_to_SharePoint_-_word_-_CEO_Task_2": {
+                            "runAfter": {
+                              "Copy_file_-_word_-_CEO_Task_2": [
+                                "Succeeded"
+                              ]
+                            },
+                            "type": "OpenApiConnection",
+                            "inputs": {
+                              "parameters": {
+                                "dataset": "@parameters('Executive Task Site (tms_ExecutiveTaskSite)')",
+                                "parameters/method": "POST",
+                                "parameters/uri": "_api/web/lists/GetbyTitle('@{parameters('Document Library Name for Executive Working (tms_DocumentLibraryNameforExecutiveWorking)')}')/items(@{outputs('Copy_file_-_word_-_CEO_Task_2')?['body/ItemId']})/validateUpdateListItem",
+                                "parameters/headers": {
+                                  "Accept": "application/json;odata=verbose",
+                                  "Content-Type": "application/json;odata=verbose"
+                                },
+                                "parameters/body": "{\n  \"formValues\": [\n    {\n      \"FieldName\": \"FileLeafRef\",\n      \"FieldValue\": \"@{concat(\n          'T',\n          substring(\n              concat('00000', string(triggerBody()?['number'])),\n              sub(length(concat('00000', string(triggerBody()?['number']))), 5),\n              5\n          ),\n          '_Response_',\n          triggerBody()?['text'],\n          '.docx'\n      )}\"\n    },\n    {\n      \"FieldName\": \"File_Uploaded_By\",\n      \"FieldValue\": \"@{triggerBody()?['email']}\"\n    }\n  ],\n  \"bNewDocumentUpdate\": true\n}"
+                              },
+                              "host": {
+                                "apiId": "/providers/Microsoft.PowerApps/apis/shared_sharepointonline",
+                                "operationId": "HttpRequest",
+                                "connectionName": "shared_sharepointonline"
+                              }
+                            }
+                          }
+                        }
+                      },
+                      "excel_3": {
+                        "case": "excel",
+                        "actions": {
+                          "Copy_file_-_excel_-_CEO_Task_2": {
+                            "metadata": {
+                              "%252fTask%2bResponses%2bTemplate%252fResponse.docx": "/Task Responses Template/Response.docx",
+                              "%252fTask%2bResponses%2bTemplate%252fResponse.xlsx": "/Task Responses Template/Response.xlsx"
+                            },
+                            "type": "OpenApiConnection",
+                            "inputs": {
+                              "parameters": {
+                                "dataset": "@parameters('Task Management Site (tms_TaskManagementSite)')",
+                                "parameters/sourceFileId": "/@{parameters('Document Library Name for Task Responses Template (tms_DocumentLibraryNameforTaskResponsesTemplate)')}/Response.xlsx",
+                                "parameters/destinationDataset": "@parameters('Executive Task Site (tms_ExecutiveTaskSite)')",
+                                "parameters/destinationFolderPath": "@{parameters('Document Library Name for Executive Working (tms_DocumentLibraryNameforExecutiveWorking)')}/@{first(outputs('Get_files_(properties_only)_-_Get_Folder_Name_-_CEO_Task')?['body/value'])?['{Name}']}",
+                                "parameters/nameConflictBehavior": 0
+                              },
+                              "host": {
+                                "apiId": "/providers/Microsoft.PowerApps/apis/shared_sharepointonline",
+                                "operationId": "CopyFileAsync",
+                                "connectionName": "shared_sharepointonline"
+                              }
+                            }
+                          },
+                          "Respond_to_a_Power_App_or_flow_-_excel_3": {
+                            "runAfter": {
+                              "Send_an_HTTP_request_to_SharePoint_-_excel_-_CEO_Task_2": [
+                                "Succeeded"
+                              ]
+                            },
+                            "type": "Response",
+                            "kind": "PowerApp",
+                            "inputs": {
+                              "schema": {
+                                "type": "object",
+                                "properties": {
+                                  "success": {
+                                    "title": "Success",
+                                    "type": "boolean",
+                                    "x-ms-content-hint": "BOOLEAN",
+                                    "x-ms-dynamically-added": true
+                                  },
+                                  "id_file": {
+                                    "title": "ID_File",
+                                    "type": "number",
+                                    "x-ms-content-hint": "NUMBER",
+                                    "x-ms-dynamically-added": true
+                                  }
+                                },
+                                "additionalProperties": {}
+                              },
+                              "statusCode": 200,
+                              "body": {
+                                "success": true,
+                                "id_file": "@outputs('Copy_file_-_excel_-_CEO_Task_2')?['body/ItemId']"
+                              }
+                            }
+                          },
+                          "Send_an_HTTP_request_to_SharePoint_-_excel_-_CEO_Task_2": {
+                            "runAfter": {
+                              "Copy_file_-_excel_-_CEO_Task_2": [
+                                "Succeeded"
+                              ]
+                            },
+                            "type": "OpenApiConnection",
+                            "inputs": {
+                              "parameters": {
+                                "dataset": "@parameters('Executive Task Site (tms_ExecutiveTaskSite)')",
+                                "parameters/method": "POST",
+                                "parameters/uri": "_api/web/lists/GetbyTitle('@{parameters('Document Library Name for Executive Working (tms_DocumentLibraryNameforExecutiveWorking)')}')/items(@{outputs('Copy_file_-_excel_-_CEO_Task_2')?['body/ItemId']})/validateUpdateListItem",
+                                "parameters/headers": {
+                                  "Accept": "application/json;odata=verbose",
+                                  "Content-Type": "application/json;odata=verbose"
+                                },
+                                "parameters/body": "{\n  \"formValues\": [\n    {\n      \"FieldName\": \"FileLeafRef\",\n      \"FieldValue\": \"@{concat(\r\n          'T',\r\n          substring(\r\n              concat('00000', string(triggerBody()?['number'])),\r\n              sub(length(concat('00000', string(triggerBody()?['number']))), 5),\r\n              5\r\n          ),\r\n          '_Response_',\r\n          triggerBody()?['text'],\r\n          '.xlsx'\r\n      )}\"\n    },\n    {\n      \"FieldName\": \"File_Uploaded_By\",\n      \"FieldValue\": \"@{triggerBody()?['email']}\"\n    }\n  ],\n  \"bNewDocumentUpdate\": true\n}"
+                              },
+                              "host": {
+                                "apiId": "/providers/Microsoft.PowerApps/apis/shared_sharepointonline",
+                                "operationId": "HttpRequest",
+                                "connectionName": "shared_sharepointonline"
+                              }
+                            }
+                          }
+                        }
+                      },
+                      "onenote_3": {
+                        "case": "onenote",
+                        "actions": {
+                          "Copy_folder_-_onenote_-_CEO_Task_2": {
+                            "metadata": {
+                              "%252fTask%2bResponses%2bTemplate%252fResponse": "/Task Responses Template/Response"
+                            },
+                            "type": "OpenApiConnection",
+                            "inputs": {
+                              "parameters": {
+                                "dataset": "@parameters('Task Management Site (tms_TaskManagementSite)')",
+                                "parameters/sourceFolderId": "/@{parameters('Document Library Name for Task Responses Template (tms_DocumentLibraryNameforTaskResponsesTemplate)')}/Response",
+                                "parameters/destinationDataset": "@parameters('Executive Task Site (tms_ExecutiveTaskSite)')",
+                                "parameters/destinationFolderPath": "@{parameters('Document Library Name for Executive Working (tms_DocumentLibraryNameforExecutiveWorking)')}/@{first(outputs('Get_files_(properties_only)_-_Get_Folder_Name_-_CEO_Task')?['body/value'])?['{Name}']}",
+                                "parameters/nameConflictBehavior": 0
+                              },
+                              "host": {
+                                "apiId": "/providers/Microsoft.PowerApps/apis/shared_sharepointonline",
+                                "operationId": "CopyFolderAsync",
+                                "connectionName": "shared_sharepointonline"
+                              }
+                            }
+                          },
+                          "Respond_to_a_Power_App_or_flow_-_onenote_3": {
+                            "runAfter": {
+                              "Send_an_HTTP_request_to_SharePoint_-_onenote_3": [
+                                "Succeeded"
+                              ]
+                            },
+                            "type": "Response",
+                            "kind": "PowerApp",
+                            "inputs": {
+                              "schema": {
+                                "type": "object",
+                                "properties": {
+                                  "success": {
+                                    "title": "Success",
+                                    "type": "boolean",
+                                    "x-ms-content-hint": "BOOLEAN",
+                                    "x-ms-dynamically-added": true
+                                  },
+                                  "id_file": {
+                                    "title": "ID_File",
+                                    "type": "number",
+                                    "x-ms-content-hint": "NUMBER",
+                                    "x-ms-dynamically-added": true
+                                  }
+                                },
+                                "additionalProperties": {}
+                              },
+                              "statusCode": 200,
+                              "body": {
+                                "success": true,
+                                "id_file": "@outputs('Copy_folder_-_onenote_-_CEO_Task_2')?['body/ItemId']"
+                              }
+                            }
+                          },
+                          "Send_an_HTTP_request_to_SharePoint_-_onenote_3": {
+                            "runAfter": {
+                              "Copy_folder_-_onenote_-_CEO_Task_2": [
+                                "Succeeded"
+                              ]
+                            },
+                            "type": "OpenApiConnection",
+                            "inputs": {
+                              "parameters": {
+                                "dataset": "@parameters('Executive Task Site (tms_ExecutiveTaskSite)')",
+                                "parameters/method": "POST",
+                                "parameters/uri": "_api/web/lists/GetbyTitle('@{parameters('Document Library Name for Executive Working (tms_DocumentLibraryNameforExecutiveWorking)')}')/items(@{outputs('Copy_folder_-_onenote_-_CEO_Task_2')?['body/ItemId']})/validateUpdateListItem",
+                                "parameters/headers": {
+                                  "Accept": "application/json;odata=verbose",
+                                  "Content-Type": "application/json;odata=verbose"
+                                },
+                                "parameters/body": "{\n  \"formValues\": [\n    {\n      \"FieldName\": \"FileLeafRef\",\n      \"FieldValue\": \"@{concat(\r\n          'T',\r\n          substring(\r\n              concat('00000', string(triggerBody()?['number'])),\r\n              sub(length(concat('00000', string(triggerBody()?['number']))), 5),\r\n              5\r\n          ),\r\n          '_Response_',\r\n          triggerBody()?['text']\r\n      )}\"\n    },\n    {\n      \"FieldName\": \"File_Uploaded_By\",\n      \"FieldValue\": \"@{triggerBody()?['email']}\"\n    }\n  ],\n  \"bNewDocumentUpdate\": true\n}"
+                              },
+                              "host": {
+                                "apiId": "/providers/Microsoft.PowerApps/apis/shared_sharepointonline",
+                                "operationId": "HttpRequest",
+                                "connectionName": "shared_sharepointonline"
+                              }
+                            }
+                          }
+                        }
+                      }
+                    },
+                    "default": {
+                      "actions": {
+                        "Respond_to_a_Power_App_or_flow_-_failed_3": {
+                          "type": "Response",
+                          "kind": "PowerApp",
+                          "inputs": {
+                            "schema": {
+                              "type": "object",
+                              "properties": {
+                                "success": {
+                                  "title": "Success",
+                                  "type": "boolean",
+                                  "x-ms-content-hint": "BOOLEAN",
+                                  "x-ms-dynamically-added": true
+                                },
+                                "id_file": {
+                                  "title": "ID_File",
+                                  "type": "number",
+                                  "x-ms-content-hint": "NUMBER",
+                                  "x-ms-dynamically-added": true
+                                }
+                              },
+                              "additionalProperties": {}
+                            },
+                            "statusCode": 200,
+                            "body": {
+                              "success": false,
+                              "id_file": 0
+                            }
+                          }
+                        }
+                      }
+                    },
+                    "expression": "@triggerBody()?['text_1']",
+                    "type": "Switch"
+                  }
+                }
+              },
+              "expression": {
+                "and": [
+                  {
+                    "equals": [
+                      "@empty(outputs('Get_files_(properties_only)_-_Get_Folder_Name_-_CEO_Task')?['body/value'])",
+                      true
+                    ]
+                  }
+                ]
+              },
+              "type": "If"
+            }
+          },
+          "runAfter": {},
+          "else": {
+            "actions": {
+              "Get_files_(properties_only)_-_Get_Folder_Name": {
+                "type": "OpenApiConnection",
+                "inputs": {
+                  "parameters": {
+                    "dataset": "@parameters('Task Management Site (tms_TaskManagementSite)')",
+                    "table": "@parameters('Working Y2026 Document Library (tms_WorkingY2026DocumentLibrary)')",
+                    "$filter": "ID_Task eq @{triggerBody()?['number']}"
+                  },
+                  "host": {
+                    "apiId": "/providers/Microsoft.PowerApps/apis/shared_sharepointonline",
+                    "operationId": "GetFileItems",
+                    "connectionName": "shared_sharepointonline"
+                  }
+                }
+              },
+              "Condition_-_Folder_Not_Created_Yet": {
+                "actions": {
+                  "Create_new_folder_-_Task_Folder": {
+                    "type": "OpenApiConnection",
+                    "inputs": {
+                      "parameters": {
+                        "dataset": "@parameters('Task Management Site (tms_TaskManagementSite)')",
+                        "table": "@parameters('Working Y2026 Document Library (tms_WorkingY2026DocumentLibrary)')",
+                        "parameters/path": "@concat(\r\n    toUpper(formatDateTime(triggerBody()?['date'],'ddMMMyyyy')),\r\n    '_T',\r\n    substring(\r\n        concat('00000', string(triggerBody()?['number'])),\r\n        sub(length(concat('00000', string(triggerBody()?['number']))), 5),\r\n        5\r\n    ),\r\n    '_',\r\n    triggerBody()?['text']\r\n)"
+                      },
+                      "host": {
+                        "apiId": "/providers/Microsoft.PowerApps/apis/shared_sharepointonline",
+                        "operationId": "CreateNewFolder",
+                        "connectionName": "shared_sharepointonline"
+                      }
+                    }
+                  },
+                  "Update_file_properties_-_ID_Task_Lookup_Column": {
+                    "runAfter": {
+                      "Create_new_folder_-_Task_Folder": [
+                        "Succeeded"
+                      ]
+                    },
+                    "type": "OpenApiConnection",
+                    "inputs": {
+                      "parameters": {
+                        "dataset": "@parameters('Task Management Site (tms_TaskManagementSite)')",
+                        "table": "@parameters('Working Y2026 Document Library (tms_WorkingY2026DocumentLibrary)')",
+                        "id": "@outputs('Create_new_folder_-_Task_Folder')?['body/ID']",
+                        "item/ID_Task/Id": "@triggerBody()?['number']"
+                      },
+                      "host": {
+                        "apiId": "/providers/Microsoft.PowerApps/apis/shared_sharepointonline",
+                        "operationId": "PatchFileItem",
+                        "connectionName": "shared_sharepointonline"
+                      }
+                    }
+                  },
+                  "Switch_-_File_Type": {
+                    "runAfter": {
+                      "Update_file_properties_-_ID_Task_Lookup_Column": [
+                        "Succeeded"
+                      ]
+                    },
+                    "cases": {
+                      "word": {
+                        "case": "word",
+                        "actions": {
+                          "Copy_file_-_word": {
+                            "metadata": {
+                              "%252fTask%2bResponses%2bTemplate%252fResponse.docx": "/Task Responses Template/Response.docx"
+                            },
+                            "type": "OpenApiConnection",
+                            "inputs": {
+                              "parameters": {
+                                "dataset": "@parameters('Task Management Site (tms_TaskManagementSite)')",
+                                "parameters/sourceFileId": "/@{parameters('Document Library Name for Task Responses Template (tms_DocumentLibraryNameforTaskResponsesTemplate)')}/Response.docx",
+                                "parameters/destinationDataset": "@parameters('Task Management Site (tms_TaskManagementSite)')",
+                                "parameters/destinationFolderPath": "@{parameters('Document Library Name for Working (tms_DocumentLibraryNameforWorking)')}/@{outputs('Create_new_folder_-_Task_Folder')?['body/{Name}']}",
+                                "parameters/nameConflictBehavior": 0
+                              },
+                              "host": {
+                                "apiId": "/providers/Microsoft.PowerApps/apis/shared_sharepointonline",
+                                "operationId": "CopyFileAsync",
+                                "connectionName": "shared_sharepointonline"
+                              }
+                            }
+                          },
+                          "Respond_to_a_Power_App_or_flow_-_word": {
+                            "runAfter": {
+                              "Send_an_HTTP_request_to_SharePoint_-_word": [
+                                "Succeeded"
+                              ]
+                            },
+                            "type": "Response",
+                            "kind": "PowerApp",
+                            "inputs": {
+                              "schema": {
+                                "type": "object",
+                                "properties": {
+                                  "success": {
+                                    "title": "Success",
+                                    "type": "boolean",
+                                    "x-ms-content-hint": "BOOLEAN",
+                                    "x-ms-dynamically-added": true
+                                  },
+                                  "id_file": {
+                                    "title": "ID_File",
+                                    "type": "number",
+                                    "x-ms-content-hint": "NUMBER",
+                                    "x-ms-dynamically-added": true
+                                  }
+                                },
+                                "additionalProperties": {}
+                              },
+                              "statusCode": 200,
+                              "body": {
+                                "success": true,
+                                "id_file": "@outputs('Copy_file_-_word')?['body/ItemId']"
+                              }
+                            }
+                          },
+                          "Send_an_HTTP_request_to_SharePoint_-_word": {
+                            "runAfter": {
+                              "Copy_file_-_word": [
+                                "Succeeded"
+                              ]
+                            },
+                            "type": "OpenApiConnection",
+                            "inputs": {
+                              "parameters": {
+                                "dataset": "@parameters('Task Management Site (tms_TaskManagementSite)')",
+                                "parameters/method": "POST",
+                                "parameters/uri": "_api/web/lists/GetbyTitle('@{parameters('Document Library Name for Working (tms_DocumentLibraryNameforWorking)')}')/items(@{outputs('Copy_file_-_word')?['body/ItemId']})/validateUpdateListItem",
+                                "parameters/headers": {
+                                  "Accept": "application/json;odata=verbose",
+                                  "Content-Type": "application/json;odata=verbose"
+                                },
+                                "parameters/body": "{\n  \"formValues\": [\n    {\n      \"FieldName\": \"FileLeafRef\",\n      \"FieldValue\": \"@{concat(\n          'T',\n          substring(\n              concat('00000', string(triggerBody()?['number'])),\n              sub(length(concat('00000', string(triggerBody()?['number']))), 5),\n              5\n          ),\n          '_Response_',\n          triggerBody()?['text'],\n          '.docx'\n      )}\"\n    },\n    {\n      \"FieldName\": \"File_Uploaded_By\",\n      \"FieldValue\": \"@{triggerBody()?['number_1']}\"\n    }\n  ],\n  \"bNewDocumentUpdate\": true\n}"
+                              },
+                              "host": {
+                                "apiId": "/providers/Microsoft.PowerApps/apis/shared_sharepointonline",
+                                "operationId": "HttpRequest",
+                                "connectionName": "shared_sharepointonline"
+                              }
+                            }
+                          }
+                        }
+                      },
+                      "excel": {
+                        "case": "excel",
+                        "actions": {
+                          "Copy_file_-_excel": {
+                            "metadata": {
+                              "%252fTask%2bResponses%2bTemplate%252fResponse.docx": "/Task Responses Template/Response.docx",
+                              "%252fTask%2bResponses%2bTemplate%252fResponse.xlsx": "/Task Responses Template/Response.xlsx"
+                            },
+                            "type": "OpenApiConnection",
+                            "inputs": {
+                              "parameters": {
+                                "dataset": "@parameters('Task Management Site (tms_TaskManagementSite)')",
+                                "parameters/sourceFileId": "/@{parameters('Document Library Name for Task Responses Template (tms_DocumentLibraryNameforTaskResponsesTemplate)')}/Response.xlsx",
+                                "parameters/destinationDataset": "@parameters('Task Management Site (tms_TaskManagementSite)')",
+                                "parameters/destinationFolderPath": "@{parameters('Document Library Name for Working (tms_DocumentLibraryNameforWorking)')}/@{outputs('Create_new_folder_-_Task_Folder')?['body/{Name}']}",
+                                "parameters/nameConflictBehavior": 0
+                              },
+                              "host": {
+                                "apiId": "/providers/Microsoft.PowerApps/apis/shared_sharepointonline",
+                                "operationId": "CopyFileAsync",
+                                "connectionName": "shared_sharepointonline"
+                              }
+                            }
+                          },
+                          "Respond_to_a_Power_App_or_flow_-_excel": {
+                            "runAfter": {
+                              "Send_an_HTTP_request_to_SharePoint_-_excel": [
+                                "Succeeded"
+                              ]
+                            },
+                            "type": "Response",
+                            "kind": "PowerApp",
+                            "inputs": {
+                              "schema": {
+                                "type": "object",
+                                "properties": {
+                                  "success": {
+                                    "title": "Success",
+                                    "type": "boolean",
+                                    "x-ms-content-hint": "BOOLEAN",
+                                    "x-ms-dynamically-added": true
+                                  },
+                                  "id_file": {
+                                    "title": "ID_File",
+                                    "type": "number",
+                                    "x-ms-content-hint": "NUMBER",
+                                    "x-ms-dynamically-added": true
+                                  }
+                                },
+                                "additionalProperties": {}
+                              },
+                              "statusCode": 200,
+                              "body": {
+                                "success": true,
+                                "id_file": "@outputs('Copy_file_-_excel')?['body/ItemId']"
+                              }
+                            }
+                          },
+                          "Send_an_HTTP_request_to_SharePoint_-_excel": {
+                            "runAfter": {
+                              "Copy_file_-_excel": [
+                                "Succeeded"
+                              ]
+                            },
+                            "type": "OpenApiConnection",
+                            "inputs": {
+                              "parameters": {
+                                "dataset": "@parameters('Task Management Site (tms_TaskManagementSite)')",
+                                "parameters/method": "POST",
+                                "parameters/uri": "_api/web/lists/GetbyTitle('@{parameters('Document Library Name for Working (tms_DocumentLibraryNameforWorking)')}')/items(@{outputs('Copy_file_-_excel')?['body/ItemId']})/validateUpdateListItem",
+                                "parameters/headers": {
+                                  "Accept": "application/json;odata=verbose",
+                                  "Content-Type": "application/json;odata=verbose"
+                                },
+                                "parameters/body": "{\n  \"formValues\": [\n    {\n      \"FieldName\": \"FileLeafRef\",\n      \"FieldValue\": \"@{concat(\r\n          'T',\r\n          substring(\r\n              concat('00000', string(triggerBody()?['number'])),\r\n              sub(length(concat('00000', string(triggerBody()?['number']))), 5),\r\n              5\r\n          ),\r\n          '_Response_',\r\n          triggerBody()?['text'],\r\n          '.xlsx'\r\n      )}\"\n    },\n    {\n      \"FieldName\": \"File_Uploaded_By\",\n      \"FieldValue\": \"@{triggerBody()?['number_1']}\"\n    }\n  ],\n  \"bNewDocumentUpdate\": true\n}"
+                              },
+                              "host": {
+                                "apiId": "/providers/Microsoft.PowerApps/apis/shared_sharepointonline",
+                                "operationId": "HttpRequest",
+                                "connectionName": "shared_sharepointonline"
+                              }
+                            }
+                          }
+                        }
+                      },
+                      "onenote": {
+                        "case": "onenote",
+                        "actions": {
+                          "Copy_folder_-_onenote": {
+                            "metadata": {
+                              "%252fTask%2bResponses%2bTemplate%252fResponse": "/Task Responses Template/Response"
+                            },
+                            "type": "OpenApiConnection",
+                            "inputs": {
+                              "parameters": {
+                                "dataset": "@parameters('Task Management Site (tms_TaskManagementSite)')",
+                                "parameters/sourceFolderId": "/@{parameters('Document Library Name for Task Responses Template (tms_DocumentLibraryNameforTaskResponsesTemplate)')}/Response",
+                                "parameters/destinationDataset": "@parameters('Task Management Site (tms_TaskManagementSite)')",
+                                "parameters/destinationFolderPath": "@{parameters('Document Library Name for Working (tms_DocumentLibraryNameforWorking)')}/@{outputs('Create_new_folder_-_Task_Folder')?['body/{Name}']}",
+                                "parameters/nameConflictBehavior": 0
+                              },
+                              "host": {
+                                "apiId": "/providers/Microsoft.PowerApps/apis/shared_sharepointonline",
+                                "operationId": "CopyFolderAsync",
+                                "connectionName": "shared_sharepointonline"
+                              }
+                            }
+                          },
+                          "Respond_to_a_Power_App_or_flow_-_onenote": {
+                            "runAfter": {
+                              "Send_an_HTTP_request_to_SharePoint_-_onenote": [
+                                "Succeeded"
+                              ]
+                            },
+                            "type": "Response",
+                            "kind": "PowerApp",
+                            "inputs": {
+                              "schema": {
+                                "type": "object",
+                                "properties": {
+                                  "success": {
+                                    "title": "Success",
+                                    "type": "boolean",
+                                    "x-ms-content-hint": "BOOLEAN",
+                                    "x-ms-dynamically-added": true
+                                  },
+                                  "id_file": {
+                                    "title": "ID_File",
+                                    "type": "number",
+                                    "x-ms-content-hint": "NUMBER",
+                                    "x-ms-dynamically-added": true
+                                  }
+                                },
+                                "additionalProperties": {}
+                              },
+                              "statusCode": 200,
+                              "body": {
+                                "success": true,
+                                "id_file": "@outputs('Copy_folder_-_onenote')?['body/ItemId']"
+                              }
+                            }
+                          },
+                          "Send_an_HTTP_request_to_SharePoint_-_onenote": {
+                            "runAfter": {
+                              "Copy_folder_-_onenote": [
+                                "Succeeded"
+                              ]
+                            },
+                            "type": "OpenApiConnection",
+                            "inputs": {
+                              "parameters": {
+                                "dataset": "@parameters('Task Management Site (tms_TaskManagementSite)')",
+                                "parameters/method": "POST",
+                                "parameters/uri": "_api/web/lists/GetbyTitle('@{parameters('Document Library Name for Working (tms_DocumentLibraryNameforWorking)')}')/items(@{outputs('Copy_folder_-_onenote')?['body/ItemId']})/validateUpdateListItem",
+                                "parameters/headers": {
+                                  "Accept": "application/json;odata=verbose",
+                                  "Content-Type": "application/json;odata=verbose"
+                                },
+                                "parameters/body": "{\n  \"formValues\": [\n    {\n      \"FieldName\": \"FileLeafRef\",\n      \"FieldValue\": \"@{concat(\r\n          'T',\r\n          substring(\r\n              concat('00000', string(triggerBody()?['number'])),\r\n              sub(length(concat('00000', string(triggerBody()?['number']))), 5),\r\n              5\r\n          ),\r\n          '_Response_',\r\n          triggerBody()?['text']\r\n      )}\"\n    },\n    {\n      \"FieldName\": \"File_Uploaded_By\",\n      \"FieldValue\": \"@{triggerBody()?['number_1']}\"\n    }\n  ],\n  \"bNewDocumentUpdate\": true\n}"
+                              },
+                              "host": {
+                                "apiId": "/providers/Microsoft.PowerApps/apis/shared_sharepointonline",
+                                "operationId": "HttpRequest",
+                                "connectionName": "shared_sharepointonline"
+                              }
+                            }
+                          }
+                        }
+                      }
+                    },
+                    "default": {
+                      "actions": {
+                        "Respond_to_a_Power_App_or_flow_-_failed": {
+                          "type": "Response",
+                          "kind": "PowerApp",
+                          "inputs": {
+                            "schema": {
+                              "type": "object",
+                              "properties": {
+                                "success": {
+                                  "title": "Success",
+                                  "type": "boolean",
+                                  "x-ms-content-hint": "BOOLEAN",
+                                  "x-ms-dynamically-added": true
+                                },
+                                "id_file": {
+                                  "title": "ID_File",
+                                  "type": "number",
+                                  "x-ms-content-hint": "NUMBER",
+                                  "x-ms-dynamically-added": true
+                                }
+                              },
+                              "additionalProperties": {}
+                            },
+                            "statusCode": 200,
+                            "body": {
+                              "success": false,
+                              "id_file": 0
+                            }
+                          }
+                        }
+                      }
+                    },
+                    "expression": "@triggerBody()?['text_1']",
+                    "type": "Switch"
+                  }
+                },
+                "runAfter": {
+                  "Get_files_(properties_only)_-_Get_Folder_Name": [
+                    "Succeeded"
+                  ]
+                },
+                "else": {
+                  "actions": {
+                    "Switch_-_File_Type_1": {
+                      "cases": {
+                        "word_1": {
+                          "case": "word",
+                          "actions": {
+                            "Copy_file_-_word_1": {
+                              "metadata": {
+                                "%252fTask%2bResponses%2bTemplate%252fResponse.docx": "/Task Responses Template/Response.docx"
+                              },
+                              "type": "OpenApiConnection",
+                              "inputs": {
+                                "parameters": {
+                                  "dataset": "@parameters('Task Management Site (tms_TaskManagementSite)')",
+                                  "parameters/sourceFileId": "/@{parameters('Document Library Name for Task Responses Template (tms_DocumentLibraryNameforTaskResponsesTemplate)')}/Response.docx",
+                                  "parameters/destinationDataset": "@parameters('Task Management Site (tms_TaskManagementSite)')",
+                                  "parameters/destinationFolderPath": "@{parameters('Document Library Name for Working (tms_DocumentLibraryNameforWorking)')}/@{first(outputs('Get_files_(properties_only)_-_Get_Folder_Name')?['body/value'])?['{Name}']}",
+                                  "parameters/nameConflictBehavior": 0
+                                },
+                                "host": {
+                                  "apiId": "/providers/Microsoft.PowerApps/apis/shared_sharepointonline",
+                                  "operationId": "CopyFileAsync",
+                                  "connectionName": "shared_sharepointonline"
+                                }
+                              }
+                            },
+                            "Respond_to_a_Power_App_or_flow_-_word_1": {
+                              "runAfter": {
+                                "Send_an_HTTP_request_to_SharePoint_-_word_1": [
+                                  "Succeeded"
+                                ]
+                              },
+                              "type": "Response",
+                              "kind": "PowerApp",
+                              "inputs": {
+                                "schema": {
+                                  "type": "object",
+                                  "properties": {
+                                    "success": {
+                                      "title": "Success",
+                                      "type": "boolean",
+                                      "x-ms-content-hint": "BOOLEAN",
+                                      "x-ms-dynamically-added": true
+                                    },
+                                    "id_file": {
+                                      "title": "ID_File",
+                                      "type": "number",
+                                      "x-ms-content-hint": "NUMBER",
+                                      "x-ms-dynamically-added": true
+                                    }
+                                  },
+                                  "additionalProperties": {}
+                                },
+                                "statusCode": 200,
+                                "body": {
+                                  "success": true,
+                                  "id_file": "@outputs('Copy_file_-_word_1')?['body/ItemId']"
+                                }
+                              }
+                            },
+                            "Send_an_HTTP_request_to_SharePoint_-_word_1": {
+                              "runAfter": {
+                                "Copy_file_-_word_1": [
+                                  "Succeeded"
+                                ]
+                              },
+                              "type": "OpenApiConnection",
+                              "inputs": {
+                                "parameters": {
+                                  "dataset": "@parameters('Task Management Site (tms_TaskManagementSite)')",
+                                  "parameters/method": "POST",
+                                  "parameters/uri": "_api/web/lists/GetbyTitle('@{parameters('Document Library Name for Working (tms_DocumentLibraryNameforWorking)')}')/items(@{outputs('Copy_file_-_word_1')?['body/ItemId']})/validateUpdateListItem",
+                                  "parameters/headers": {
+                                    "Accept": "application/json;odata=verbose",
+                                    "Content-Type": "application/json;odata=verbose"
+                                  },
+                                  "parameters/body": "{\n  \"formValues\": [\n    {\n      \"FieldName\": \"FileLeafRef\",\n      \"FieldValue\": \"@{concat(\n          'T',\n          substring(\n              concat('00000', string(triggerBody()?['number'])),\n              sub(length(concat('00000', string(triggerBody()?['number']))), 5),\n              5\n          ),\n          '_Response_',\n          triggerBody()?['text'],\n          '.docx'\n      )}\"\n    },\n    {\n      \"FieldName\": \"File_Uploaded_By\",\n      \"FieldValue\": \"@{triggerBody()?['number_1']}\"\n    }\n  ],\n  \"bNewDocumentUpdate\": true\n}"
+                                },
+                                "host": {
+                                  "apiId": "/providers/Microsoft.PowerApps/apis/shared_sharepointonline",
+                                  "operationId": "HttpRequest",
+                                  "connectionName": "shared_sharepointonline"
+                                }
+                              }
+                            }
+                          }
+                        },
+                        "excel_1": {
+                          "case": "excel",
+                          "actions": {
+                            "Copy_file_-_excel_1": {
+                              "metadata": {
+                                "%252fTask%2bResponses%2bTemplate%252fResponse.docx": "/Task Responses Template/Response.docx",
+                                "%252fTask%2bResponses%2bTemplate%252fResponse.xlsx": "/Task Responses Template/Response.xlsx"
+                              },
+                              "type": "OpenApiConnection",
+                              "inputs": {
+                                "parameters": {
+                                  "dataset": "@parameters('Task Management Site (tms_TaskManagementSite)')",
+                                  "parameters/sourceFileId": "/@{parameters('Document Library Name for Task Responses Template (tms_DocumentLibraryNameforTaskResponsesTemplate)')}/Response.xlsx",
+                                  "parameters/destinationDataset": "@parameters('Task Management Site (tms_TaskManagementSite)')",
+                                  "parameters/destinationFolderPath": "@{parameters('Document Library Name for Working (tms_DocumentLibraryNameforWorking)')}/@{first(outputs('Get_files_(properties_only)_-_Get_Folder_Name')?['body/value'])?['{Name}']}",
+                                  "parameters/nameConflictBehavior": 0
+                                },
+                                "host": {
+                                  "apiId": "/providers/Microsoft.PowerApps/apis/shared_sharepointonline",
+                                  "operationId": "CopyFileAsync",
+                                  "connectionName": "shared_sharepointonline"
+                                }
+                              }
+                            },
+                            "Respond_to_a_Power_App_or_flow_-_excel_1": {
+                              "runAfter": {
+                                "Send_an_HTTP_request_to_SharePoint_-_excel_2": [
+                                  "Succeeded"
+                                ]
+                              },
+                              "type": "Response",
+                              "kind": "PowerApp",
+                              "inputs": {
+                                "schema": {
+                                  "type": "object",
+                                  "properties": {
+                                    "success": {
+                                      "title": "Success",
+                                      "type": "boolean",
+                                      "x-ms-content-hint": "BOOLEAN",
+                                      "x-ms-dynamically-added": true
+                                    },
+                                    "id_file": {
+                                      "title": "ID_File",
+                                      "type": "number",
+                                      "x-ms-content-hint": "NUMBER",
+                                      "x-ms-dynamically-added": true
+                                    }
+                                  },
+                                  "additionalProperties": {}
+                                },
+                                "statusCode": 200,
+                                "body": {
+                                  "success": true,
+                                  "id_file": "@outputs('Copy_file_-_excel_1')?['body/ItemId']"
+                                }
+                              }
+                            },
+                            "Send_an_HTTP_request_to_SharePoint_-_excel_2": {
+                              "runAfter": {
+                                "Copy_file_-_excel_1": [
+                                  "Succeeded"
+                                ]
+                              },
+                              "type": "OpenApiConnection",
+                              "inputs": {
+                                "parameters": {
+                                  "dataset": "@parameters('Task Management Site (tms_TaskManagementSite)')",
+                                  "parameters/method": "POST",
+                                  "parameters/uri": "_api/web/lists/GetbyTitle('@{parameters('Document Library Name for Working (tms_DocumentLibraryNameforWorking)')}')/items(@{outputs('Copy_file_-_excel_1')?['body/ItemId']})/validateUpdateListItem",
+                                  "parameters/headers": {
+                                    "Accept": "application/json;odata=verbose",
+                                    "Content-Type": "application/json;odata=verbose"
+                                  },
+                                  "parameters/body": "{\n  \"formValues\": [\n    {\n      \"FieldName\": \"FileLeafRef\",\n      \"FieldValue\": \"@{concat(\r\n          'T',\r\n          substring(\r\n              concat('00000', string(triggerBody()?['number'])),\r\n              sub(length(concat('00000', string(triggerBody()?['number']))), 5),\r\n              5\r\n          ),\r\n          '_Response_',\r\n          triggerBody()?['text'],\r\n          '.xlsx'\r\n      )}\"\n    },\n    {\n      \"FieldName\": \"File_Uploaded_By\",\n      \"FieldValue\": \"@{triggerBody()?['number_1']}\"\n    }\n  ],\n  \"bNewDocumentUpdate\": true\n}"
+                                },
+                                "host": {
+                                  "apiId": "/providers/Microsoft.PowerApps/apis/shared_sharepointonline",
+                                  "operationId": "HttpRequest",
+                                  "connectionName": "shared_sharepointonline"
+                                }
+                              }
+                            }
+                          }
+                        },
+                        "onenote_1": {
+                          "case": "onenote",
+                          "actions": {
+                            "Copy_folder_-_onenote_1": {
+                              "metadata": {
+                                "%252fTask%2bResponses%2bTemplate%252fResponse": "/Task Responses Template/Response"
+                              },
+                              "type": "OpenApiConnection",
+                              "inputs": {
+                                "parameters": {
+                                  "dataset": "@parameters('Task Management Site (tms_TaskManagementSite)')",
+                                  "parameters/sourceFolderId": "/@{parameters('Document Library Name for Task Responses Template (tms_DocumentLibraryNameforTaskResponsesTemplate)')}/Response",
+                                  "parameters/destinationDataset": "@parameters('Task Management Site (tms_TaskManagementSite)')",
+                                  "parameters/destinationFolderPath": "@{parameters('Document Library Name for Working (tms_DocumentLibraryNameforWorking)')}/@{first(outputs('Get_files_(properties_only)_-_Get_Folder_Name')?['body/value'])?['{Name}']}",
+                                  "parameters/nameConflictBehavior": 0
+                                },
+                                "host": {
+                                  "apiId": "/providers/Microsoft.PowerApps/apis/shared_sharepointonline",
+                                  "operationId": "CopyFolderAsync",
+                                  "connectionName": "shared_sharepointonline"
+                                }
+                              }
+                            },
+                            "Respond_to_a_Power_App_or_flow_-_onenote_1": {
+                              "runAfter": {
+                                "Send_an_HTTP_request_to_SharePoint_-_onenote_1": [
+                                  "Succeeded"
+                                ]
+                              },
+                              "type": "Response",
+                              "kind": "PowerApp",
+                              "inputs": {
+                                "schema": {
+                                  "type": "object",
+                                  "properties": {
+                                    "success": {
+                                      "title": "Success",
+                                      "type": "boolean",
+                                      "x-ms-content-hint": "BOOLEAN",
+                                      "x-ms-dynamically-added": true
+                                    },
+                                    "id_file": {
+                                      "title": "ID_File",
+                                      "type": "number",
+                                      "x-ms-content-hint": "NUMBER",
+                                      "x-ms-dynamically-added": true
+                                    }
+                                  },
+                                  "additionalProperties": {}
+                                },
+                                "statusCode": 200,
+                                "body": {
+                                  "success": true,
+                                  "id_file": "@outputs('Copy_folder_-_onenote_1')?['body/ItemId']"
+                                }
+                              }
+                            },
+                            "Send_an_HTTP_request_to_SharePoint_-_onenote_1": {
+                              "runAfter": {
+                                "Copy_folder_-_onenote_1": [
+                                  "Succeeded"
+                                ]
+                              },
+                              "type": "OpenApiConnection",
+                              "inputs": {
+                                "parameters": {
+                                  "dataset": "@parameters('Task Management Site (tms_TaskManagementSite)')",
+                                  "parameters/method": "POST",
+                                  "parameters/uri": "_api/web/lists/GetbyTitle('@{parameters('Document Library Name for Working (tms_DocumentLibraryNameforWorking)')}')/items(@{outputs('Copy_folder_-_onenote_1')?['body/ItemId']})/validateUpdateListItem",
+                                  "parameters/headers": {
+                                    "Accept": "application/json;odata=verbose",
+                                    "Content-Type": "application/json;odata=verbose"
+                                  },
+                                  "parameters/body": "{\n  \"formValues\": [\n    {\n      \"FieldName\": \"FileLeafRef\",\n      \"FieldValue\": \"@{concat(\r\n          'T',\r\n          substring(\r\n              concat('00000', string(triggerBody()?['number'])),\r\n              sub(length(concat('00000', string(triggerBody()?['number']))), 5),\r\n              5\r\n          ),\r\n          '_Response_',\r\n          triggerBody()?['text']\r\n      )}\"\n    },\n    {\n      \"FieldName\": \"File_Uploaded_By\",\n      \"FieldValue\": \"@{triggerBody()?['number_1']}\"\n    }\n  ],\n  \"bNewDocumentUpdate\": true\n}"
+                                },
+                                "host": {
+                                  "apiId": "/providers/Microsoft.PowerApps/apis/shared_sharepointonline",
+                                  "operationId": "HttpRequest",
+                                  "connectionName": "shared_sharepointonline"
+                                }
+                              }
+                            }
+                          }
+                        }
+                      },
+                      "default": {
+                        "actions": {
+                          "Respond_to_a_Power_App_or_flow_-_failed_1": {
+                            "type": "Response",
+                            "kind": "PowerApp",
+                            "inputs": {
+                              "schema": {
+                                "type": "object",
+                                "properties": {
+                                  "success": {
+                                    "title": "Success",
+                                    "type": "boolean",
+                                    "x-ms-content-hint": "BOOLEAN",
+                                    "x-ms-dynamically-added": true
+                                  },
+                                  "id_file": {
+                                    "title": "ID_File",
+                                    "type": "number",
+                                    "x-ms-content-hint": "NUMBER",
+                                    "x-ms-dynamically-added": true
+                                  }
+                                },
+                                "additionalProperties": {}
+                              },
+                              "statusCode": 200,
+                              "body": {
+                                "success": false,
+                                "id_file": 0
+                              }
+                            }
+                          }
+                        }
+                      },
+                      "expression": "@triggerBody()?['text_1']",
+                      "type": "Switch"
+                    }
+                  }
+                },
+                "expression": {
+                  "and": [
+                    {
+                      "equals": [
+                        "@empty(outputs('Get_files_(properties_only)_-_Get_Folder_Name')?['body/value'])",
+                        true
+                      ]
+                    }
+                  ]
+                },
+                "type": "If"
+              }
+            }
+          },
+          "expression": {
+            "and": [
+              {
+                "equals": [
+                  "@triggerBody()?['number_2']",
+                  4
+                ]
+              }
+            ]
+          },
+          "type": "If"
+        }
+      }
+    },
+    "templateName": null
+  },
+  "schemaVersion": "1.0.0.0"
+}

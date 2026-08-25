@@ -1,0 +1,271 @@
+{
+  "properties": {
+    "connectionReferences": {
+      "shared_sharepointonline": {
+        "runtimeSource": "embedded",
+        "connection": {
+          "connectionReferenceLogicalName": "tms_SharePointAdmin"
+        },
+        "api": {
+          "name": "shared_sharepointonline"
+        }
+      }
+    },
+    "definition": {
+      "$schema": "https://schema.management.azure.com/providers/Microsoft.Logic/schemas/2016-06-01/workflowdefinition.json#",
+      "contentVersion": "undefined",
+      "parameters": {
+        "$authentication": {
+          "defaultValue": {},
+          "type": "SecureObject"
+        },
+        "$connections": {
+          "defaultValue": {},
+          "type": "Object"
+        },
+        "Task Management Site (tms_TaskManagementSite)": {
+          "defaultValue": "https://m365b467805.sharepoint.com/sites/TaskManagement",
+          "type": "String",
+          "metadata": {
+            "schemaName": "tms_TaskManagementSite"
+          }
+        },
+        "Executive Task Site (tms_ExecutiveTaskSite)": {
+          "defaultValue": "https://m365b467805.sharepoint.com/sites/ExecutiveTask",
+          "type": "String",
+          "metadata": {
+            "schemaName": "tms_ExecutiveTaskSite"
+          }
+        },
+        "Document Library Name for Executive Working (tms_DocumentLibraryNameforExecutiveWorking)": {
+          "defaultValue": "Executive Working Y2026",
+          "type": "String",
+          "metadata": {
+            "schemaName": "tms_DocumentLibraryNameforExecutiveWorking"
+          }
+        },
+        "Document Library Name for Working (tms_DocumentLibraryNameforWorking)": {
+          "defaultValue": "Working Y2026",
+          "type": "String",
+          "metadata": {
+            "schemaName": "tms_DocumentLibraryNameforWorking"
+          }
+        }
+      },
+      "triggers": {
+        "manual": {
+          "metadata": {
+            "operationMetadataId": "9ae0229c-c797-450d-aa47-fee28c595d1a"
+          },
+          "type": "Request",
+          "kind": "PowerAppV2",
+          "inputs": {
+            "schema": {
+              "type": "object",
+              "properties": {
+                "number": {
+                  "description": "Please enter a number",
+                  "title": "ID_File",
+                  "type": "number",
+                  "x-ms-content-hint": "NUMBER",
+                  "x-ms-dynamically-added": true
+                },
+                "number_1": {
+                  "description": "Please enter a number",
+                  "title": "TaskFromUserLevel",
+                  "type": "number",
+                  "x-ms-content-hint": "NUMBER",
+                  "x-ms-dynamically-added": true
+                },
+                "number_2": {
+                  "description": "Please enter a number",
+                  "title": "ID_Checklist",
+                  "type": "number",
+                  "x-ms-content-hint": "NUMBER",
+                  "x-ms-dynamically-added": true
+                }
+              },
+              "required": [
+                "number",
+                "number_1",
+                "number_2"
+              ]
+            }
+          }
+        }
+      },
+      "actions": {
+        "Condition_Is_CEO_Task": {
+          "actions": {
+            "Send_an_HTTP_request_to_SharePoint_CEO_Task": {
+              "type": "OpenApiConnection",
+              "inputs": {
+                "parameters": {
+                  "dataset": "@parameters('Executive Task Site (tms_ExecutiveTaskSite)')",
+                  "parameters/method": "POST",
+                  "parameters/uri": "_api/web/lists/GetbyTitle('@{parameters('Document Library Name for Executive Working (tms_DocumentLibraryNameforExecutiveWorking)')}')/items(@{triggerBody()?['number']})/validateUpdateListItem",
+                  "parameters/body": "{\n  \"formValues\": [\n    {\n      \"FieldName\": \"ID_Checklist\",\n      \"FieldValue\": \"@{triggerBody()?['number_2']}\"\n    }\n  ]\n}"
+                },
+                "host": {
+                  "apiId": "/providers/Microsoft.PowerApps/apis/shared_sharepointonline",
+                  "operationId": "HttpRequest",
+                  "connectionName": "shared_sharepointonline"
+                }
+              }
+            },
+            "Respond_to_a_Power_App_or_flow_1": {
+              "runAfter": {
+                "Send_an_HTTP_request_to_SharePoint_CEO_Task": [
+                  "Succeeded"
+                ]
+              },
+              "metadata": {
+                "operationMetadataId": "0f544e0e-4ac8-41f3-a2b4-d9a36cf62d9d"
+              },
+              "type": "Response",
+              "kind": "PowerApp",
+              "inputs": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "title": "Success",
+                      "x-ms-dynamically-added": true,
+                      "type": "boolean"
+                    }
+                  },
+                  "additionalProperties": {}
+                },
+                "statusCode": 200,
+                "body": {
+                  "success": true
+                }
+              }
+            },
+            "Respond_to_a_Power_App_or_flow_-_Locked_1": {
+              "runAfter": {
+                "Send_an_HTTP_request_to_SharePoint_CEO_Task": [
+                  "Failed"
+                ]
+              },
+              "metadata": {
+                "operationMetadataId": "0f544e0e-4ac8-41f3-a2b4-d9a36cf62d9d"
+              },
+              "type": "Response",
+              "kind": "PowerApp",
+              "inputs": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "title": "Success",
+                      "x-ms-dynamically-added": true,
+                      "type": "boolean"
+                    }
+                  },
+                  "additionalProperties": {}
+                },
+                "statusCode": 200,
+                "body": {
+                  "success": false
+                }
+              }
+            }
+          },
+          "runAfter": {},
+          "else": {
+            "actions": {
+              "Send_an_HTTP_request_to_SharePoint": {
+                "type": "OpenApiConnection",
+                "inputs": {
+                  "parameters": {
+                    "dataset": "@parameters('Task Management Site (tms_TaskManagementSite)')",
+                    "parameters/method": "POST",
+                    "parameters/uri": "_api/web/lists/GetbyTitle('@{parameters('Document Library Name for Working (tms_DocumentLibraryNameforWorking)')}')/items(@{triggerBody()?['number']})/validateUpdateListItem",
+                    "parameters/body": "{\n  \"formValues\": [\n    {\n      \"FieldName\": \"ID_Checklist\",\n      \"FieldValue\": \"@{triggerBody()?['number_2']}\"\n    }\n  ]\n}"
+                  },
+                  "host": {
+                    "apiId": "/providers/Microsoft.PowerApps/apis/shared_sharepointonline",
+                    "operationId": "HttpRequest",
+                    "connectionName": "shared_sharepointonline"
+                  }
+                }
+              },
+              "Respond_to_a_Power_App_or_flow": {
+                "runAfter": {
+                  "Send_an_HTTP_request_to_SharePoint": [
+                    "Succeeded"
+                  ]
+                },
+                "metadata": {
+                  "operationMetadataId": "0f544e0e-4ac8-41f3-a2b4-d9a36cf62d9d"
+                },
+                "type": "Response",
+                "kind": "PowerApp",
+                "inputs": {
+                  "schema": {
+                    "type": "object",
+                    "properties": {
+                      "success": {
+                        "title": "Success",
+                        "x-ms-dynamically-added": true,
+                        "type": "boolean"
+                      }
+                    },
+                    "additionalProperties": {}
+                  },
+                  "statusCode": 200,
+                  "body": {
+                    "success": true
+                  }
+                }
+              },
+              "Respond_to_a_Power_App_or_flow_-_Locked": {
+                "runAfter": {
+                  "Send_an_HTTP_request_to_SharePoint": [
+                    "Failed"
+                  ]
+                },
+                "metadata": {
+                  "operationMetadataId": "0f544e0e-4ac8-41f3-a2b4-d9a36cf62d9d"
+                },
+                "type": "Response",
+                "kind": "PowerApp",
+                "inputs": {
+                  "schema": {
+                    "type": "object",
+                    "properties": {
+                      "success": {
+                        "title": "Success",
+                        "x-ms-dynamically-added": true,
+                        "type": "boolean"
+                      }
+                    },
+                    "additionalProperties": {}
+                  },
+                  "statusCode": 200,
+                  "body": {
+                    "success": false
+                  }
+                }
+              }
+            }
+          },
+          "expression": {
+            "and": [
+              {
+                "equals": [
+                  "@triggerBody()?['number_1']",
+                  4
+                ]
+              }
+            ]
+          },
+          "type": "If"
+        }
+      }
+    },
+    "templateName": null
+  },
+  "schemaVersion": "1.0.0.0"
+}

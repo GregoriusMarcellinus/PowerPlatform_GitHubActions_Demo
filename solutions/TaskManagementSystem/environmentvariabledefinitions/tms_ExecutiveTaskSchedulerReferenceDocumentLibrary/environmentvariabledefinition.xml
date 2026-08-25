@@ -1,0 +1,15 @@
+<environmentvariabledefinition schemaname="tms_ExecutiveTaskSchedulerReferenceDocumentLibrary">
+  <apiid>/providers/microsoft.powerapps/apis/shared_sharepointonline</apiid>
+  <displayname default="Executive Task Scheduler Reference Document Library">
+    <label description="Executive Task Scheduler Reference Document Library" languagecode="1033" />
+  </displayname>
+  <introducedversion>1.0.0.26</introducedversion>
+  <iscustomizable>1</iscustomizable>
+  <isrequired>0</isrequired>
+  <parameterkey>table</parameterkey>
+  <parentdefinitionid>
+    <schemaname>tms_ExecutiveTaskSite</schemaname>
+  </parentdefinitionid>
+  <secretstore>0</secretstore>
+  <type>100000004</type>
+</environmentvariabledefinition>

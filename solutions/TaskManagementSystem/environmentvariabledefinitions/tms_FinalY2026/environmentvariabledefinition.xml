@@ -1,0 +1,15 @@
+<environmentvariabledefinition schemaname="tms_FinalY2026">
+  <apiid>/providers/microsoft.powerapps/apis/shared_sharepointonline</apiid>
+  <displayname default="Final Y2026 Document Library">
+    <label description="Final Y2026 Document Library" languagecode="1033" />
+  </displayname>
+  <introducedversion>1.0.0.26</introducedversion>
+  <iscustomizable>1</iscustomizable>
+  <isrequired>0</isrequired>
+  <parameterkey>table</parameterkey>
+  <parentdefinitionid>
+    <schemaname>tms_TaskManagementSite</schemaname>
+  </parentdefinitionid>
+  <secretstore>0</secretstore>
+  <type>100000004</type>
+</environmentvariabledefinition>

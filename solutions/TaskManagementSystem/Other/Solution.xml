@@ -1,0 +1,158 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<ImportExportXml version="9.2.26073.163" SolutionPackageVersion="9.2" languagecode="1033" generatedBy="CrmLive" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" OrganizationVersion="9.2.26073.163" OrganizationSchemaType="Standard" CRMServerServiceabilityVersion="9.2.26073.00163">
+  <SolutionManifest>
+    <UniqueName>TaskManagementSystem</UniqueName>
+    <LocalizedNames>
+      <LocalizedName description="Task Management" languagecode="1033" />
+    </LocalizedNames>
+    <Descriptions />
+    <Version>1.0.0.33</Version>
+    <Managed>0</Managed>
+    <Publisher>
+      <UniqueName>DITPAM</UniqueName>
+      <LocalizedNames>
+        <LocalizedName description="DITPAM" languagecode="1033" />
+      </LocalizedNames>
+      <Descriptions>
+        <Description description="Divisi Information Technology PT Purwanto Asset Management" languagecode="1033" />
+      </Descriptions>
+      <EMailAddress xsi:nil="true"></EMailAddress>
+      <SupportingWebsiteUrl xsi:nil="true"></SupportingWebsiteUrl>
+      <CustomizationPrefix>ditpam</CustomizationPrefix>
+      <CustomizationOptionValuePrefix>70717</CustomizationOptionValuePrefix>
+      <Addresses>
+        <Address>
+          <AddressNumber>1</AddressNumber>
+          <AddressTypeCode>1</AddressTypeCode>
+          <City xsi:nil="true"></City>
+          <County xsi:nil="true"></County>
+          <Country xsi:nil="true"></Country>
+          <Fax xsi:nil="true"></Fax>
+          <FreightTermsCode xsi:nil="true"></FreightTermsCode>
+          <ImportSequenceNumber xsi:nil="true"></ImportSequenceNumber>
+          <Latitude xsi:nil="true"></Latitude>
+          <Line1 xsi:nil="true"></Line1>
+          <Line2 xsi:nil="true"></Line2>
+          <Line3 xsi:nil="true"></Line3>
+          <Longitude xsi:nil="true"></Longitude>
+          <Name xsi:nil="true"></Name>
+          <PostalCode xsi:nil="true"></PostalCode>
+          <PostOfficeBox xsi:nil="true"></PostOfficeBox>
+          <PrimaryContactName xsi:nil="true"></PrimaryContactName>
+          <ShippingMethodCode>1</ShippingMethodCode>
+          <StateOrProvince xsi:nil="true"></StateOrProvince>
+          <Telephone1 xsi:nil="true"></Telephone1>
+          <Telephone2 xsi:nil="true"></Telephone2>
+          <Telephone3 xsi:nil="true"></Telephone3>
+          <TimeZoneRuleVersionNumber xsi:nil="true"></TimeZoneRuleVersionNumber>
+          <UPSZone xsi:nil="true"></UPSZone>
+          <UTCOffset xsi:nil="true"></UTCOffset>
+          <UTCConversionTimeZoneCode xsi:nil="true"></UTCConversionTimeZoneCode>
+        </Address>
+        <Address>
+          <AddressNumber>2</AddressNumber>
+          <AddressTypeCode>1</AddressTypeCode>
+          <City xsi:nil="true"></City>
+          <County xsi:nil="true"></County>
+          <Country xsi:nil="true"></Country>
+          <Fax xsi:nil="true"></Fax>
+          <FreightTermsCode xsi:nil="true"></FreightTermsCode>
+          <ImportSequenceNumber xsi:nil="true"></ImportSequenceNumber>
+          <Latitude xsi:nil="true"></Latitude>
+          <Line1 xsi:nil="true"></Line1>
+          <Line2 xsi:nil="true"></Line2>
+          <Line3 xsi:nil="true"></Line3>
+          <Longitude xsi:nil="true"></Longitude>
+          <Name xsi:nil="true"></Name>
+          <PostalCode xsi:nil="true"></PostalCode>
+          <PostOfficeBox xsi:nil="true"></PostOfficeBox>
+          <PrimaryContactName xsi:nil="true"></PrimaryContactName>
+          <ShippingMethodCode>1</ShippingMethodCode>
+          <StateOrProvince xsi:nil="true"></StateOrProvince>
+          <Telephone1 xsi:nil="true"></Telephone1>
+          <Telephone2 xsi:nil="true"></Telephone2>
+          <Telephone3 xsi:nil="true"></Telephone3>
+          <TimeZoneRuleVersionNumber xsi:nil="true"></TimeZoneRuleVersionNumber>
+          <UPSZone xsi:nil="true"></UPSZone>
+          <UTCOffset xsi:nil="true"></UTCOffset>
+          <UTCConversionTimeZoneCode xsi:nil="true"></UTCConversionTimeZoneCode>
+        </Address>
+      </Addresses>
+    </Publisher>
+    <RootComponents>
+      <RootComponent type="29" id="{0091d260-017e-f111-ab0e-7ced8d71166a}" behavior="0" />
+      <RootComponent type="29" id="{01c0c8e5-b272-f111-ab0d-70a8a59d0099}" behavior="0" />
+      <RootComponent type="29" id="{1a5e0b21-f893-f111-8075-000d3a3635d5}" behavior="0" />
+      <RootComponent type="29" id="{211be720-9261-f111-a826-70a8a501d06e}" behavior="0" />
+      <RootComponent type="29" id="{27955d48-5662-f111-a826-70a8a501d06e}" behavior="0" />
+      <RootComponent type="29" id="{2fd952c3-ec9b-f111-b8db-000d3a3635d5}" behavior="0" />
+      <RootComponent type="29" id="{313c54ff-2041-f111-bec6-70a8a501d06e}" behavior="0" />
+      <RootComponent type="29" id="{31c3d802-a798-f111-b8db-000d3a3635d5}" behavior="0" />
+      <RootComponent type="29" id="{37072112-f57f-f111-ab0e-000d3a367ac4}" behavior="0" />
+      <RootComponent type="29" id="{3d8edea6-5768-f111-ab0c-70a8a50387ea}" behavior="0" />
+      <RootComponent type="29" id="{412e29ae-7b38-f111-88b4-70a8a501d06e}" behavior="0" />
+      <RootComponent type="29" id="{41b2d6f6-d147-f111-bec7-70a8a501d06e}" behavior="0" />
+      <RootComponent type="29" id="{43d66a92-5362-f111-a826-70a8a501d06e}" behavior="0" />
+      <RootComponent type="29" id="{454e11b4-2e36-f111-88b4-70a8a501d06e}" behavior="0" />
+      <RootComponent type="29" id="{49c0bac0-7235-f111-88b4-70a8a501d06e}" behavior="0" />
+      <RootComponent type="29" id="{4de30c34-893d-f111-88b4-70a8a501d06e}" behavior="0" />
+      <RootComponent type="29" id="{4fbcc2f9-f646-f111-bec7-70a8a501d06e}" behavior="0" />
+      <RootComponent type="29" id="{583e567b-ac93-f111-8075-000d3a3635d5}" behavior="0" />
+      <RootComponent type="29" id="{59017477-2997-f111-8075-000d3a3635d5}" behavior="0" />
+      <RootComponent type="29" id="{59fa1ed8-6962-f111-a826-70a8a501d06e}" behavior="0" />
+      <RootComponent type="29" id="{5a4168b1-0b3e-f111-88b4-70a8a501d06e}" behavior="0" />
+      <RootComponent type="29" id="{5ffdf24d-4763-f111-a826-70a8a501d06e}" behavior="0" />
+      <RootComponent type="29" id="{65a81a6d-9082-f111-ab0e-000d3a59dc75}" behavior="0" />
+      <RootComponent type="29" id="{66698ff6-7036-f111-88b4-70a8a501d06e}" behavior="0" />
+      <RootComponent type="29" id="{66c9cfda-3c78-f111-ab0f-70a8a59d0099}" behavior="0" />
+      <RootComponent type="29" id="{68272132-4050-f111-bec7-70a8a501d06e}" behavior="0" />
+      <RootComponent type="29" id="{684f8aa9-3d37-f111-88b4-70a8a501d06e}" behavior="0" />
+      <RootComponent type="29" id="{6f9f3e42-fb48-f111-bec7-70a8a501d06e}" behavior="0" />
+      <RootComponent type="29" id="{7222ea6b-3a62-f111-a826-70a8a501d06e}" behavior="0" />
+      <RootComponent type="29" id="{7e783f2c-7d35-f111-88b4-70a8a501d06e}" behavior="0" />
+      <RootComponent type="29" id="{7fb27999-b135-f111-88b4-70a8a501d06e}" behavior="0" />
+      <RootComponent type="29" id="{849abc8e-dc90-f111-8076-000d3a3635d5}" behavior="0" />
+      <RootComponent type="29" id="{85606d9d-9735-f111-88b4-70a8a501d06e}" behavior="0" />
+      <RootComponent type="29" id="{87186f81-9535-f111-88b4-70a8a501d06e}" behavior="0" />
+      <RootComponent type="29" id="{89e8b05a-5a68-f111-ab0c-70a8a50387ea}" behavior="0" />
+      <RootComponent type="29" id="{8ba44b4c-a646-f111-bec7-70a8a501d06e}" behavior="0" />
+      <RootComponent type="29" id="{96a58db8-4663-f111-a826-70a8a501d06e}" behavior="0" />
+      <RootComponent type="29" id="{9f536812-2e45-f111-bec6-70a8a501d06e}" behavior="0" />
+      <RootComponent type="29" id="{a6fd198c-5668-f111-ab0c-70a8a50387ea}" behavior="0" />
+      <RootComponent type="29" id="{b1277f3f-c751-f111-bec7-70a8a501d06e}" behavior="0" />
+      <RootComponent type="29" id="{b405a008-9c98-f111-b8db-000d3a3635d5}" behavior="0" />
+      <RootComponent type="29" id="{b90f8f06-7635-f111-88b4-70a8a501d06e}" behavior="0" />
+      <RootComponent type="29" id="{b956a3ab-bf93-f111-8075-000d3a3635d5}" behavior="0" />
+      <RootComponent type="29" id="{bab2d16b-5f68-f111-ab0c-70a8a50387ea}" behavior="0" />
+      <RootComponent type="29" id="{bb1d2a93-1f36-f111-88b4-70a8a501d06e}" behavior="0" />
+      <RootComponent type="29" id="{becc84b0-4c35-f111-88b4-70a8a501d06e}" behavior="0" />
+      <RootComponent type="29" id="{bfa586ab-4e4c-f111-bec7-70a8a501d06e}" behavior="0" />
+      <RootComponent type="29" id="{c056327d-8f35-f111-88b4-70a8a501d06e}" behavior="0" />
+      <RootComponent type="29" id="{c4f7cdac-5a8b-f111-ab0f-000d3a3635d5}" behavior="0" />
+      <RootComponent type="29" id="{c7380493-fd67-f111-ab0c-70a8a50387ea}" behavior="0" />
+      <RootComponent type="29" id="{c7a9cdeb-8e82-f111-ab0e-000d3a59dc75}" behavior="0" />
+      <RootComponent type="29" id="{c8fe5238-b798-f111-b8db-000d3a3635d5}" behavior="0" />
+      <RootComponent type="29" id="{ca4c31f5-4346-f111-bec7-70a8a501d06e}" behavior="0" />
+      <RootComponent type="29" id="{cdcc4a99-5362-f111-a826-70a8a501d06e}" behavior="0" />
+      <RootComponent type="29" id="{d1efbe3c-2997-f111-8075-000d3a3635d5}" behavior="0" />
+      <RootComponent type="29" id="{d26f940d-0443-f111-bec6-70a8a501d06e}" behavior="0" />
+      <RootComponent type="29" id="{def34539-e045-f111-bec7-70a8a501d06e}" behavior="0" />
+      <RootComponent type="29" id="{e06c16b5-9135-f111-88b4-70a8a501d06e}" behavior="0" />
+      <RootComponent type="29" id="{e723b086-fd45-f111-bec7-70a8a501d06e}" behavior="0" />
+      <RootComponent type="29" id="{e8253c76-7e35-f111-88b4-70a8a501d06e}" behavior="0" />
+      <RootComponent type="29" id="{eacd6414-0729-f111-88b4-002248ebc79c}" behavior="0" />
+      <RootComponent type="29" id="{f16057fa-6662-f111-a826-70a8a501d06e}" behavior="0" />
+      <RootComponent type="29" id="{f18344d1-6b62-f111-a826-70a8a501d06e}" behavior="0" />
+      <RootComponent type="29" id="{f1d73745-3c41-f111-bec6-70a8a501d06e}" behavior="0" />
+      <RootComponent type="29" id="{f50e1434-ae61-f111-a826-70a8a501d06e}" behavior="0" />
+      <RootComponent type="29" id="{f53d72c0-7f62-f111-a826-70a8a501d06e}" behavior="0" />
+      <RootComponent type="29" id="{f7a30849-6e36-f111-88b4-70a8a501d06e}" behavior="0" />
+      <RootComponent type="29" id="{f7f40128-8661-f111-a826-70a8a501d06e}" behavior="0" />
+      <RootComponent type="29" id="{fe860289-0468-f111-ab0c-70a8a50387ea}" behavior="0" />
+      <RootComponent type="29" id="{fe8e6b2c-9a7a-f111-ab0f-70a8a59d0099}" behavior="0" />
+      <RootComponent type="29" id="{feeb8f6b-4137-f111-88b4-70a8a501d06e}" behavior="0" />
+      <RootComponent type="300" schemaName="tms_taskmanagementsystem_54508" behavior="0" />
+    </RootComponents>
+    <MissingDependencies />
+  </SolutionManifest>
+</ImportExportXml>

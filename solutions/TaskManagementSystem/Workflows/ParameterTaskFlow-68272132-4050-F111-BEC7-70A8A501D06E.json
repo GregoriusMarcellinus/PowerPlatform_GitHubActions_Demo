@@ -1,0 +1,535 @@
+{
+  "properties": {
+    "connectionReferences": {
+      "shared_sharepointonline-1": {
+        "runtimeSource": "embedded",
+        "connection": {
+          "connectionReferenceLogicalName": "tms_SharePointAdmin"
+        },
+        "api": {
+          "name": "shared_sharepointonline"
+        }
+      }
+    },
+    "definition": {
+      "$schema": "https://schema.management.azure.com/providers/Microsoft.Logic/schemas/2016-06-01/workflowdefinition.json#",
+      "contentVersion": "1.0.0.0",
+      "parameters": {
+        "$authentication": {
+          "defaultValue": {},
+          "type": "SecureObject"
+        },
+        "$connections": {
+          "defaultValue": {},
+          "type": "Object"
+        },
+        "Task Management Site (tms_TaskManagementSite)": {
+          "defaultValue": "https://m365b467805.sharepoint.com/sites/TaskManagement",
+          "type": "String",
+          "metadata": {
+            "schemaName": "tms_TaskManagementSite"
+          }
+        },
+        "Task List (tms_TaskList)": {
+          "defaultValue": "2b09fc89-2c29-499b-bca9-cd2d764eaf3a",
+          "type": "String",
+          "metadata": {
+            "schemaName": "tms_TaskList"
+          }
+        },
+        "Approval List (tms_ApprovalList)": {
+          "defaultValue": "ad84ee0b-4df9-49ac-965f-7abadfff85f9",
+          "type": "String",
+          "metadata": {
+            "schemaName": "tms_ApprovalList"
+          }
+        },
+        "Task Assigned To Division List (tms_TaskAssignedToDivisionList)": {
+          "defaultValue": "e59fc654-0a6c-469d-9edb-10b069db7077",
+          "type": "String",
+          "metadata": {
+            "schemaName": "tms_TaskAssignedToDivisionList"
+          }
+        },
+        "Task Assigned To Person List (tms_TaskAssignedToPersonList)": {
+          "defaultValue": "14f77253-8e43-4f56-9f1e-6e6b0ba1fb23",
+          "type": "String",
+          "metadata": {
+            "schemaName": "tms_TaskAssignedToPersonList"
+          }
+        }
+      },
+      "triggers": {
+        "manual": {
+          "metadata": {
+            "operationMetadataId": "ae14d66e-468b-45d1-b9e8-aeadf593cefb"
+          },
+          "type": "Request",
+          "kind": "PowerAppV2",
+          "inputs": {
+            "schema": {
+              "type": "object",
+              "properties": {
+                "number": {
+                  "description": "Please enter a number",
+                  "title": "ID_User",
+                  "type": "number",
+                  "x-ms-content-hint": "NUMBER",
+                  "x-ms-dynamically-added": true
+                },
+                "number_1": {
+                  "description": "Please enter a number",
+                  "title": "ID_Division",
+                  "type": "number",
+                  "x-ms-content-hint": "NUMBER",
+                  "x-ms-dynamically-added": true
+                },
+                "number_2": {
+                  "description": "Please enter a number",
+                  "title": "ID_Task",
+                  "type": "number",
+                  "x-ms-content-hint": "NUMBER",
+                  "x-ms-dynamically-added": true
+                },
+                "text": {
+                  "description": "Please enter your input",
+                  "title": "UserDivision",
+                  "type": "string",
+                  "x-ms-content-hint": "TEXT",
+                  "x-ms-dynamically-added": true
+                },
+                "number_4": {
+                  "description": "Please enter a number",
+                  "title": "TaskViewedByUserLevel",
+                  "type": "number",
+                  "x-ms-content-hint": "NUMBER",
+                  "x-ms-dynamically-added": true
+                }
+              },
+              "required": [
+                "number",
+                "number_1",
+                "number_2",
+                "text",
+                "number_4"
+              ]
+            }
+          }
+        }
+      },
+      "actions": {
+        "Condition_-_Viewed_By_Level_Above_2": {
+          "actions": {
+            "Select_-_Task_Output": {
+              "runAfter": {
+                "Get_items_-_Task": [
+                  "Succeeded"
+                ]
+              },
+              "metadata": {
+                "operationMetadataId": "3740df65-c365-40b4-86d6-88d973e6c9bc"
+              },
+              "type": "Select",
+              "inputs": {
+                "from": "@outputs('Get_items_-_Task')?['body/value']",
+                "select": {
+                  "ID": "@item()?['ID']",
+                  "task_level": "@item()?['task_level']",
+                  "task_name": "@item()?['task_name']",
+                  "ID_GrandParent_Lookup": "@item()?['ID_GrandParent_Lookup']",
+                  "ID_Parent_Lookup": "@item()?['ID_Parent_Lookup']",
+                  "ID_Priority": "@item()?['ID_Priority']",
+                  "task_description": "@item()?['task_description']",
+                  "plan_start_date": "@item()?['plan_start_date']",
+                  "plan_finish_date": "@item()?['plan_finish_date']",
+                  "is_task": "@item()?['is_task']",
+                  "ID_Status": "@item()?['ID_Status']",
+                  "ID_User_Task_Created_By": "@item()?['ID_User_Task_Created_By']",
+                  "Created": "@item()?['Created']",
+                  "actual_start_date": "@item()?['actual_start_date']",
+                  "actual_finish_date": "@item()?['actual_finish_date']",
+                  "is_canceled": "@item()?['is_canceled']",
+                  "completion_date": "@item()?['completion_date']",
+                  "ID_User_Task_Started_By": "@item()?['ID_User_Task_Started_By']",
+                  "ID_Parent_Lookup_plan_start_date": "@item()?['ID_Parent_Lookup_x003a__x0020_pl']",
+                  "ID_Parent_Lookup_plan_finish_date": "@item()?['ID_Parent_Lookup_x003a__x0020_pl0']",
+                  "ID_Parent_Lookup_actual_start_date": "@item()?['ID_Parent_Lookup_x003a__x0020_ac']",
+                  "ID_Parent_Lookup_actual_finish_date": "@item()?['ID_Parent_Lookup_x003a__x0020_ac0']",
+                  "ID_Parent_Lookup_completion_date": "@item()?['ID_Parent_Lookup_x003a__x0020_co']",
+                  "ID_Task_Scheduler": "@item()?['ID_Task_Scheduler']",
+                  "reminder_date": "@item()?['reminder_date']",
+                  "Modified": "@item()?['Modified']",
+                  "approval_type": "@item()?['approval_type']",
+                  "approval_rule": "@item()?['approval_rule']",
+                  "ID_User_Task_Finished_By": "@item()?['ID_User_Task_Finished_By']",
+                  "task_duration": "@item()?['task_duration']"
+                }
+              }
+            },
+            "Respond_to_a_Power_App_or_flow_2": {
+              "runAfter": {
+                "Select_-_Task_Output": [
+                  "Succeeded"
+                ]
+              },
+              "metadata": {
+                "operationMetadataId": "5365ab21-6410-4723-a2a1-0d5d282e6286"
+              },
+              "type": "Response",
+              "kind": "PowerApp",
+              "inputs": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "tasks": {
+                      "title": "Tasks",
+                      "x-ms-dynamically-added": true,
+                      "type": "string"
+                    },
+                    "haveaccess": {
+                      "title": "HaveAccess",
+                      "x-ms-dynamically-added": true,
+                      "type": "boolean"
+                    }
+                  },
+                  "additionalProperties": {}
+                },
+                "statusCode": 200,
+                "body": {
+                  "tasks": "@{body('Select_-_Task_Output')}",
+                  "haveaccess": true
+                }
+              }
+            },
+            "Get_items_-_Task": {
+              "metadata": {
+                "operationMetadataId": "731f9c80-b59b-4b24-a606-38dbcc446e65"
+              },
+              "type": "OpenApiConnection",
+              "inputs": {
+                "parameters": {
+                  "dataset": "@parameters('Task Management Site (tms_TaskManagementSite)')",
+                  "table": "@parameters('Task List (tms_TaskList)')",
+                  "$filter": "ID eq @{triggerBody()?['number_2']}"
+                },
+                "host": {
+                  "apiId": "/providers/Microsoft.PowerApps/apis/shared_sharepointonline",
+                  "operationId": "GetItems",
+                  "connectionName": "shared_sharepointonline-1"
+                }
+              }
+            }
+          },
+          "runAfter": {},
+          "else": {
+            "actions": {
+              "Get_items_-_Approvals": {
+                "metadata": {
+                  "operationMetadataId": "4106053b-84bf-4e5b-afab-da4cf2ef98c8"
+                },
+                "type": "OpenApiConnection",
+                "inputs": {
+                  "parameters": {
+                    "dataset": "@parameters('Task Management Site (tms_TaskManagementSite)')",
+                    "table": "@parameters('Approval List (tms_ApprovalList)')",
+                    "$filter": "ID_User_Approver/Id eq @{triggerBody()?['number']} and ID_Task/Id eq @{triggerBody()?['number_2']}",
+                    "$orderby": "ID desc",
+                    "$top": 100
+                  },
+                  "host": {
+                    "apiId": "/providers/Microsoft.PowerApps/apis/shared_sharepointonline",
+                    "operationId": "GetItems",
+                    "connectionName": "shared_sharepointonline-1"
+                  }
+                }
+              },
+              "Select_-_Approvals_User_ID": {
+                "runAfter": {
+                  "Get_items_-_Approvals": [
+                    "Succeeded"
+                  ]
+                },
+                "metadata": {
+                  "operationMetadataId": "53c52f00-3a20-48b2-957a-7bb8e8ad8f1c"
+                },
+                "type": "Select",
+                "inputs": {
+                  "from": "@outputs('Get_items_-_Approvals')?['body/value']",
+                  "select": {
+                    "ID eq": "@item()?['ID_Task/Id']"
+                  }
+                }
+              },
+              "Get_items_-_Task_Assigned_To_Division": {
+                "metadata": {
+                  "operationMetadataId": "caf2d1ca-c72a-4861-b2bc-da1f9fc92dc7"
+                },
+                "type": "OpenApiConnection",
+                "inputs": {
+                  "parameters": {
+                    "dataset": "@parameters('Task Management Site (tms_TaskManagementSite)')",
+                    "table": "@parameters('Task Assigned To Division List (tms_TaskAssignedToDivisionList)')",
+                    "$filter": "ID_Division/Id eq @{triggerBody()?['number_1']} and ID_Task/Id eq @{triggerBody()?['number_2']}",
+                    "$orderby": "ID desc",
+                    "$top": 100
+                  },
+                  "host": {
+                    "apiId": "/providers/Microsoft.PowerApps/apis/shared_sharepointonline",
+                    "operationId": "GetItems",
+                    "connectionName": "shared_sharepointonline-1"
+                  }
+                }
+              },
+              "Select_-_Task_Assigned_To_Division": {
+                "runAfter": {
+                  "Get_items_-_Task_Assigned_To_Division": [
+                    "Succeeded"
+                  ]
+                },
+                "metadata": {
+                  "operationMetadataId": "08c95068-66d0-4c34-adf4-0a8cff7a498c"
+                },
+                "type": "Select",
+                "inputs": {
+                  "from": "@outputs('Get_items_-_Task_Assigned_To_Division')?['body/value']",
+                  "select": {
+                    "ID eq": "@item()?['ID_Task/Id']"
+                  }
+                }
+              },
+              "Get_items_-_Task_Assigned_To_Person": {
+                "metadata": {
+                  "operationMetadataId": "ba8a1ca0-0af3-47a4-8899-ad28253019b3"
+                },
+                "type": "OpenApiConnection",
+                "inputs": {
+                  "parameters": {
+                    "dataset": "@parameters('Task Management Site (tms_TaskManagementSite)')",
+                    "table": "@parameters('Task Assigned To Person List (tms_TaskAssignedToPersonList)')",
+                    "$filter": "ID_User/Id eq @{triggerBody()?['number']} and ID_Task/Id eq @{triggerBody()?['number_2']}",
+                    "$orderby": "ID desc",
+                    "$top": 100
+                  },
+                  "host": {
+                    "apiId": "/providers/Microsoft.PowerApps/apis/shared_sharepointonline",
+                    "operationId": "GetItems",
+                    "connectionName": "shared_sharepointonline-1"
+                  }
+                }
+              },
+              "Select_-_Task_Assigned_To_Person": {
+                "runAfter": {
+                  "Get_items_-_Task_Assigned_To_Person": [
+                    "Succeeded"
+                  ]
+                },
+                "metadata": {
+                  "operationMetadataId": "7b3b4815-b6f0-4256-8d3a-a62b5a44cb9d"
+                },
+                "type": "Select",
+                "inputs": {
+                  "from": "@outputs('Get_items_-_Task_Assigned_To_Person')?['body/value']",
+                  "select": {
+                    "ID eq": "@item()?['ID_Task/Id']"
+                  }
+                }
+              },
+              "Join_-_or": {
+                "runAfter": {
+                  "Select_-_Task_Assigned_To_Division": [
+                    "Succeeded"
+                  ],
+                  "Select_-_Task_Assigned_To_Person": [
+                    "Succeeded"
+                  ],
+                  "Select_-_Approvals_User_ID": [
+                    "Succeeded"
+                  ]
+                },
+                "metadata": {
+                  "operationMetadataId": "ff16c7d0-3968-4b61-bafa-0c42c07ef00d"
+                },
+                "type": "Join",
+                "inputs": {
+                  "from": "@union(body('Select_-_Task_Assigned_To_Person'), body('Select_-_Task_Assigned_To_Division'), body('Select_-_Approvals_User_ID'))",
+                  "joinWith": " or "
+                }
+              },
+              "Don't_Have_Access": {
+                "actions": {
+                  "Respond_to_a_Power_App_or_flow_1": {
+                    "metadata": {
+                      "operationMetadataId": "d03cd06d-9a4a-4e25-a761-d1cfe9aa7a1b"
+                    },
+                    "type": "Response",
+                    "kind": "PowerApp",
+                    "inputs": {
+                      "schema": {
+                        "type": "object",
+                        "properties": {
+                          "tasks": {
+                            "title": "Tasks",
+                            "x-ms-dynamically-added": true,
+                            "type": "string"
+                          },
+                          "haveaccess": {
+                            "title": "HaveAccess",
+                            "x-ms-dynamically-added": true,
+                            "type": "boolean"
+                          }
+                        },
+                        "additionalProperties": {}
+                      },
+                      "statusCode": 200,
+                      "body": {
+                        "haveaccess": false
+                      }
+                    }
+                  }
+                },
+                "runAfter": {
+                  "Join_-_or": [
+                    "Succeeded"
+                  ]
+                },
+                "else": {
+                  "actions": {
+                    "Get_items_-_All_Tasks": {
+                      "metadata": {
+                        "operationMetadataId": "f7160188-1c7e-4cf2-87ed-298b63b905fd"
+                      },
+                      "type": "OpenApiConnection",
+                      "inputs": {
+                        "parameters": {
+                          "dataset": "@parameters('Task Management Site (tms_TaskManagementSite)')",
+                          "table": "@parameters('Task List (tms_TaskList)')",
+                          "$filter": "@replace(\n    replace(\n        replace(\n            replace(body('Join_-_or'), '{', ''),\n        '}', ''),\n    '\"', ''),\n':', ' '\n)"
+                        },
+                        "host": {
+                          "apiId": "/providers/Microsoft.PowerApps/apis/shared_sharepointonline",
+                          "operationId": "GetItems",
+                          "connectionName": "shared_sharepointonline-1"
+                        }
+                      }
+                    },
+                    "Respond_to_a_Power_App_or_flow": {
+                      "runAfter": {
+                        "Select_-_All_Tasks_Output": [
+                          "Succeeded"
+                        ]
+                      },
+                      "metadata": {
+                        "operationMetadataId": "192a4018-c223-49bb-80ad-34a1fdbc48be"
+                      },
+                      "type": "Response",
+                      "kind": "PowerApp",
+                      "inputs": {
+                        "schema": {
+                          "type": "object",
+                          "properties": {
+                            "tasks": {
+                              "title": "Tasks",
+                              "x-ms-dynamically-added": true,
+                              "type": "string"
+                            },
+                            "haveaccess": {
+                              "title": "HaveAccess",
+                              "x-ms-dynamically-added": true,
+                              "type": "boolean"
+                            }
+                          },
+                          "additionalProperties": {}
+                        },
+                        "statusCode": 200,
+                        "body": {
+                          "tasks": "@{body('Select_-_All_Tasks_Output')}",
+                          "haveaccess": true
+                        }
+                      }
+                    },
+                    "Select_-_All_Tasks_Output": {
+                      "runAfter": {
+                        "Get_items_-_All_Tasks": [
+                          "Succeeded"
+                        ]
+                      },
+                      "metadata": {
+                        "operationMetadataId": "d5fbcc59-cb89-400b-b01b-46980b78c8de"
+                      },
+                      "type": "Select",
+                      "inputs": {
+                        "from": "@outputs('Get_items_-_All_Tasks')?['body/value']",
+                        "select": {
+                          "ID": "@item()?['ID']",
+                          "task_level": "@item()?['task_level']",
+                          "task_name": "@item()?['task_name']",
+                          "ID_GrandParent_Lookup": "@item()?['ID_GrandParent_Lookup']",
+                          "ID_Parent_Lookup": "@item()?['ID_Parent_Lookup']",
+                          "ID_Priority": "@item()?['ID_Priority']",
+                          "task_description": "@item()?['task_description']",
+                          "plan_start_date": "@item()?['plan_start_date']",
+                          "plan_finish_date": "@item()?['plan_finish_date']",
+                          "is_task": "@item()?['is_task']",
+                          "ID_Status": "@item()?['ID_Status']",
+                          "ID_User_Task_Created_By": "@item()?['ID_User_Task_Created_By']",
+                          "Created": "@item()?['Created']",
+                          "actual_start_date": "@item()?['actual_start_date']",
+                          "actual_finish_date": "@item()?['actual_finish_date']",
+                          "is_canceled": "@item()?['is_canceled']",
+                          "completion_date": "@item()?['completion_date']",
+                          "ID_User_Task_Started_By": "@item()?['ID_User_Task_Started_By']",
+                          "ID_Parent_Lookup_plan_start_date": "@item()?['ID_Parent_Lookup_x003a__x0020_pl']",
+                          "ID_Parent_Lookup_plan_finish_date": "@item()?['ID_Parent_Lookup_x003a__x0020_pl0']",
+                          "ID_Parent_Lookup_actual_start_date": "@item()?['ID_Parent_Lookup_x003a__x0020_ac']",
+                          "ID_Parent_Lookup_actual_finish_date": "@item()?['ID_Parent_Lookup_x003a__x0020_ac0']",
+                          "ID_Parent_Lookup_completion_date": "@item()?['ID_Parent_Lookup_x003a__x0020_co']",
+                          "ID_Task_Scheduler": "@item()?['ID_Task_Scheduler']",
+                          "reminder_before": "@item()?['reminder_before']",
+                          "Modified": "@item()?['Modified']",
+                          "approval_type": "@item()?['approval_type']",
+                          "approval_rule": "@item()?['approval_rule']",
+                          "ID_User_Task_Finished_By": "@item()?['ID_User_Task_Finished_By']",
+                          "task_duration": "@item()?['task_duration']"
+                        }
+                      }
+                    }
+                  }
+                },
+                "expression": {
+                  "and": [
+                    {
+                      "equals": [
+                        "@replace(\r\n    replace(\r\n        replace(\r\n            replace(body('Join_-_or'), '{', ''),\r\n        '}', ''),\r\n    '\"', ''),\r\n':', ' '\r\n)",
+                        ""
+                      ]
+                    }
+                  ]
+                },
+                "metadata": {
+                  "operationMetadataId": "b5ead38e-fca0-4897-9546-c925fd14546c"
+                },
+                "type": "If"
+              }
+            }
+          },
+          "expression": {
+            "and": [
+              {
+                "greater": [
+                  "@triggerBody()?['number_4']",
+                  2
+                ]
+              }
+            ]
+          },
+          "metadata": {
+            "operationMetadataId": "f1438d4d-8098-4a12-9ad8-f961d5125153"
+          },
+          "type": "If"
+        }
+      }
+    },
+    "templateName": null
+  },
+  "schemaVersion": "1.0.0.0"
+}

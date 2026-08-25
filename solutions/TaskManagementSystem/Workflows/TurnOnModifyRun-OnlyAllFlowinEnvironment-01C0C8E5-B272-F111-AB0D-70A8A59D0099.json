@@ -1,0 +1,215 @@
+{
+  "properties": {
+    "connectionReferences": {
+      "shared_powerplatformadminv2": {
+        "runtimeSource": "invoker",
+        "connection": {
+          "connectionReferenceLogicalName": "new_sharedpowerplatformadminv2_42442"
+        },
+        "api": {
+          "name": "shared_powerplatformadminv2"
+        }
+      },
+      "shared_flowmanagement": {
+        "runtimeSource": "invoker",
+        "connection": {
+          "connectionReferenceLogicalName": "tms_sharedflowmanagement_b4529"
+        },
+        "api": {
+          "name": "shared_flowmanagement"
+        }
+      }
+    },
+    "definition": {
+      "$schema": "https://schema.management.azure.com/providers/Microsoft.Logic/schemas/2016-06-01/workflowdefinition.json#",
+      "contentVersion": "1.0.0.0",
+      "parameters": {
+        "$authentication": {
+          "defaultValue": {},
+          "type": "SecureObject"
+        },
+        "$connections": {
+          "defaultValue": {},
+          "type": "Object"
+        }
+      },
+      "triggers": {
+        "manual": {
+          "metadata": {
+            "operationMetadataId": "4e0cc807-56f3-41a0-9692-07f16714a818"
+          },
+          "type": "Request",
+          "kind": "Button",
+          "inputs": {
+            "schema": {
+              "type": "object",
+              "properties": {
+                "text": {
+                  "description": "Please enter your input",
+                  "title": "Environemnt ID",
+                  "type": "string",
+                  "x-ms-content-hint": "TEXT",
+                  "x-ms-dynamically-added": true
+                },
+                "text_1": {
+                  "description": "Please enter your input",
+                  "title": "Security Group ID",
+                  "type": "string",
+                  "x-ms-content-hint": "TEXT",
+                  "x-ms-dynamically-added": true
+                }
+              },
+              "required": [
+                "text",
+                "text_1"
+              ]
+            }
+          }
+        }
+      },
+      "actions": {
+        "Filter_array_-_Trigger_PowerAppV2": {
+          "runAfter": {
+            "Apply_to_each_-_Turn_On_All_Flow": [
+              "Succeeded"
+            ]
+          },
+          "metadata": {
+            "operationMetadataId": "ca99fcaf-0bd4-450d-a90e-da9392b7aecb"
+          },
+          "type": "Query",
+          "inputs": {
+            "from": "@outputs('Retrieve_cloud_flows_with_filters')?['body/value']",
+            "where": "@and(\n    not(empty(item()?['definition'])),\n    contains(item()?['definition'],'\"kind\":\"PowerAppV2\"')\n)"
+          }
+        },
+        "Compose_-_Total_Flow_Trigger_PowerAppV2": {
+          "runAfter": {
+            "Filter_array_-_Trigger_PowerAppV2": [
+              "Succeeded"
+            ]
+          },
+          "metadata": {
+            "operationMetadataId": "b24d1565-019f-4f46-8a13-32f4512eb814"
+          },
+          "type": "Compose",
+          "inputs": "@length(body('Filter_array_-_Trigger_PowerAppV2'))"
+        },
+        "Retrieve_cloud_flows_with_filters": {
+          "runAfter": {},
+          "metadata": {
+            "operationMetadataId": "cc9314ec-aa15-4958-8a65-128d77d94f80"
+          },
+          "type": "OpenApiConnection",
+          "inputs": {
+            "parameters": {
+              "api-version": "2024-10-01",
+              "environmentId": "@triggerBody()?['text']"
+            },
+            "host": {
+              "apiId": "/providers/Microsoft.PowerApps/apis/shared_powerplatformadminv2",
+              "operationId": "ListCloudFlows",
+              "connectionName": "shared_powerplatformadminv2"
+            }
+          }
+        },
+        "Apply_to_each_-_Modify_Run-Only_PowerAppV2": {
+          "foreach": "@body('Filter_array_-_Trigger_PowerAppV2')",
+          "actions": {
+            "Modify_Run-Only_Users": {
+              "metadata": {
+                "operationMetadataId": "a6bdde5b-8e7b-4eef-990b-f39a35b676e5"
+              },
+              "type": "OpenApiConnection",
+              "inputs": {
+                "parameters": {
+                  "environmentName": "@triggerBody()?['text']",
+                  "flowName": "@items('Apply_to_each_-_Modify_Run-Only_PowerAppV2')?['workflowId']",
+                  "permissions/put": [
+                    {
+                      "properties": {
+                        "principal": {
+                          "id": "@triggerBody()?['text_1']",
+                          "type": "Group"
+                        }
+                      }
+                    }
+                  ]
+                },
+                "host": {
+                  "apiId": "/providers/Microsoft.PowerApps/apis/shared_flowmanagement",
+                  "operationId": "ModifyRunOnlyUsers",
+                  "connectionName": "shared_flowmanagement"
+                }
+              }
+            }
+          },
+          "runAfter": {
+            "Compose_-_Total_Flow_Trigger_PowerAppV2": [
+              "Succeeded"
+            ]
+          },
+          "metadata": {
+            "operationMetadataId": "cf021554-c3b3-436c-a8d2-1908d0233b3f"
+          },
+          "type": "Foreach",
+          "runtimeConfiguration": {
+            "concurrency": {
+              "repetitions": 5
+            }
+          }
+        },
+        "Apply_to_each_-_Turn_On_All_Flow": {
+          "foreach": "@outputs('Retrieve_cloud_flows_with_filters')?['body/value']",
+          "actions": {
+            "Turn_On_Flow": {
+              "metadata": {
+                "operationMetadataId": "d8826ed8-2519-40bd-a680-293f35f08d1f"
+              },
+              "type": "OpenApiConnection",
+              "inputs": {
+                "parameters": {
+                  "environmentName": "@triggerBody()?['text']",
+                  "flowName": "@items('Apply_to_each_-_Turn_On_All_Flow')?['workflowId']"
+                },
+                "host": {
+                  "apiId": "/providers/Microsoft.PowerApps/apis/shared_flowmanagement",
+                  "operationId": "StartFlow",
+                  "connectionName": "shared_flowmanagement"
+                }
+              }
+            }
+          },
+          "runAfter": {
+            "Compose_-_Total_Flow": [
+              "Succeeded"
+            ]
+          },
+          "metadata": {
+            "operationMetadataId": "fc3c7e69-40e6-40b7-9c7c-2066a1593c28"
+          },
+          "type": "Foreach",
+          "runtimeConfiguration": {
+            "concurrency": {
+              "repetitions": 5
+            }
+          }
+        },
+        "Compose_-_Total_Flow": {
+          "runAfter": {
+            "Retrieve_cloud_flows_with_filters": [
+              "Succeeded"
+            ]
+          },
+          "metadata": {
+            "operationMetadataId": "e8264d6b-261d-4655-af23-6eefa4f75c3f"
+          },
+          "type": "Compose",
+          "inputs": "@length(outputs('Retrieve_cloud_flows_with_filters')?['body/value'])"
+        }
+      }
+    },
+    "templateName": null
+  },
+  "schemaVersion": "1.0.0.0"
+}

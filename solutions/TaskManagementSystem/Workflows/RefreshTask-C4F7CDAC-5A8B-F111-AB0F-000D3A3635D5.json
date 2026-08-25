@@ -1,0 +1,158 @@
+{
+  "properties": {
+    "connectionReferences": {
+      "shared_sharepointonline-1": {
+        "runtimeSource": "embedded",
+        "connection": {
+          "connectionReferenceLogicalName": "tms_SharePointAdmin"
+        },
+        "api": {
+          "name": "shared_sharepointonline"
+        }
+      }
+    },
+    "definition": {
+      "$schema": "https://schema.management.azure.com/providers/Microsoft.Logic/schemas/2016-06-01/workflowdefinition.json#",
+      "contentVersion": "1.0.0.0",
+      "parameters": {
+        "$authentication": {
+          "defaultValue": {},
+          "type": "SecureObject"
+        },
+        "$connections": {
+          "defaultValue": {},
+          "type": "Object"
+        },
+        "Task Management Site (tms_TaskManagementSite)": {
+          "defaultValue": "https://m365b467805.sharepoint.com/sites/TaskManagement",
+          "type": "String",
+          "metadata": {
+            "schemaName": "tms_TaskManagementSite"
+          }
+        },
+        "Task List (tms_TaskList)": {
+          "defaultValue": "2b09fc89-2c29-499b-bca9-cd2d764eaf3a",
+          "type": "String",
+          "metadata": {
+            "schemaName": "tms_TaskList"
+          }
+        }
+      },
+      "triggers": {
+        "manual": {
+          "metadata": {
+            "operationMetadataId": "ae14d66e-468b-45d1-b9e8-aeadf593cefb"
+          },
+          "type": "Request",
+          "kind": "PowerAppV2",
+          "inputs": {
+            "schema": {
+              "type": "object",
+              "properties": {
+                "number_1": {
+                  "description": "Please enter a number",
+                  "title": "ID_Task",
+                  "type": "number",
+                  "x-ms-content-hint": "NUMBER",
+                  "x-ms-dynamically-added": true
+                }
+              },
+              "required": [
+                "number_1"
+              ]
+            }
+          }
+        }
+      },
+      "actions": {
+        "Get_items_-_Task_List": {
+          "runAfter": {},
+          "type": "OpenApiConnection",
+          "inputs": {
+            "parameters": {
+              "dataset": "@parameters('Task Management Site (tms_TaskManagementSite)')",
+              "table": "@parameters('Task List (tms_TaskList)')",
+              "$filter": "ID eq @{triggerBody()?['number_1']}"
+            },
+            "host": {
+              "apiId": "/providers/Microsoft.PowerApps/apis/shared_sharepointonline",
+              "operationId": "GetItems",
+              "connectionName": "shared_sharepointonline-1"
+            }
+          }
+        },
+        "Select_-_Task_List_Output": {
+          "runAfter": {
+            "Get_items_-_Task_List": [
+              "Succeeded"
+            ]
+          },
+          "type": "Select",
+          "inputs": {
+            "from": "@outputs('Get_items_-_Task_List')?['body/value']",
+            "select": {
+              "ID": "@item()?['ID']",
+              "task_level": "@item()?['task_level']",
+              "task_name": "@item()?['task_name']",
+              "ID_GrandParent_Lookup": "@item()?['ID_GrandParent_Lookup']",
+              "ID_Parent_Lookup": "@item()?['ID_Parent_Lookup']",
+              "ID_Priority": "@item()?['ID_Priority']",
+              "task_description": "@item()?['task_description']",
+              "plan_start_date": "@item()?['plan_start_date']",
+              "plan_finish_date": "@item()?['plan_finish_date']",
+              "is_task": "@item()?['is_task']",
+              "ID_Status": "@item()?['ID_Status']",
+              "ID_User_Task_Created_By": "@item()?['ID_User_Task_Created_By']",
+              "Created": "@item()?['Created']",
+              "actual_start_date": "@item()?['actual_start_date']",
+              "actual_finish_date": "@item()?['actual_finish_date']",
+              "completion_date": "@item()?['completion_date']",
+              "ID_User_Task_Started_By": "@item()?['ID_User_Task_Started_By']",
+              "ID_Parent_Lookup_plan_start_date": "@item()?['ID_Parent_Lookup_x003a__x0020_pl']",
+              "ID_Parent_Lookup_plan_finish_date": "@item()?['ID_Parent_Lookup_x003a__x0020_pl0']",
+              "ID_Parent_Lookup_actual_start_date": "@item()?['ID_Parent_Lookup_x003a__x0020_ac']",
+              "ID_Parent_Lookup_actual_finish_date": "@item()?['ID_Parent_Lookup_x003a__x0020_ac0']",
+              "ID_Parent_Lookup_completion_date": "@item()?['ID_Parent_Lookup_x003a__x0020_co']",
+              "ID_Task_Scheduler": "@item()?['ID_Task_Scheduler']",
+              "reminder_date": "@item()?['reminder_date']",
+              "Modified": "@item()?['Modified']",
+              "approval_type": "@item()?['approval_type']",
+              "approval_rule": "@item()?['approval_rule']",
+              "ID_User_Task_Finished_By": "@item()?['ID_User_Task_Finished_By']",
+              "task_duration": "@item()?['task_duration']"
+            }
+          }
+        },
+        "Respond_to_a_Power_App_or_flow_1": {
+          "runAfter": {
+            "Select_-_Task_List_Output": [
+              "Succeeded"
+            ]
+          },
+          "type": "Response",
+          "kind": "PowerApp",
+          "inputs": {
+            "schema": {
+              "type": "object",
+              "properties": {
+                "task": {
+                  "title": "Task",
+                  "type": "string",
+                  "x-ms-content-hint": "TEXT",
+                  "x-ms-dynamically-added": true
+                }
+              },
+              "additionalProperties": {}
+            },
+            "statusCode": 200,
+            "body": {
+              "task": "@{first(body('Select_-_Task_List_Output'))}"
+            }
+          }
+        }
+      }
+    },
+    "templateName": null
+  },
+  "schemaVersion": "1.0.0.0"
+}
