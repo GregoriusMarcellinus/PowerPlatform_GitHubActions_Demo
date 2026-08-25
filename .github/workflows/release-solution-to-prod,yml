@@ -19,12 +19,10 @@ name: release-solution-to-prod
 on:
   workflow_dispatch:
     inputs:
-      # Change this value
       solution_name:
         description: 'name of the solution to work on from Power Platform'
         required: true
         default: visitormanagement
-      #Do Not change these values
       solution_shipping_folder:
         description: 'folder name for staging the exported solution *do not change*'
         required: true
