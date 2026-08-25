@@ -48,10 +48,10 @@ jobs:
     - name: who-am-i action
       uses: microsoft/powerplatform-actions/who-am-i@v1
       with:
-        environment-url: ${{ secrets.DevEnvironmentUrl }}
-        app-id: ${{ secrets.ClientID }}
-        client-secret: ${{ secrets.PowerPlatformSPN }}
-        tenant-id: ${{ secrets.TenantID }}
+        environment-url: ${{ secrets.DEVENVIRONMENTURL }}
+        app-id: ${{ secrets.CLIENTID }}
+        client-secret: ${{ secrets.POWERPLATFORMSPN }}
+        tenant-id: ${{ secrets.TENANTID }}
 
     - name: export-solution action
       uses: microsoft/powerplatform-actions/export-solution@v1
