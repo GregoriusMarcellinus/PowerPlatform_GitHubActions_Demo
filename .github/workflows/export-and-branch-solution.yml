@@ -45,6 +45,13 @@ jobs:
     - name: Install Power Platform Tools
       uses: microsoft/powerplatform-actions/actions-install@v1
 
+    - name: Debug secret presence
+      run: |
+        if ("${{ secrets.ClientID }}" -eq "") { echo "ClientID KOSONG" } else { echo "ClientID ADA ISINYA" }
+        if ("${{ secrets.PowerPlatformSPN }}" -eq "") { echo "PowerPlatformSPN KOSONG" } else { echo "PowerPlatformSPN ADA ISINYA" }
+        if ("${{ secrets.TentantID }}" -eq "") { echo "TentantID KOSONG" } else { echo "TentantID ADA ISINYA" }
+      shell: pwsh
+
     - name: who-am-i action
       uses: microsoft/powerplatform-actions/who-am-i@v1
       with:
