@@ -10,7 +10,7 @@ name: release-solution-to-prod
 #
 #  using secrets for
 #   ClientID              Service Principal App ID
-#   TentantID             Service Principal Azure AD tenant
+#   TenantID             Service Principal Azure AD tenant
 #   PowerPlatformSPN      Service Principal secret
 #
 #   BuildEnvironmentUrl   Url referencing the build environment
@@ -69,7 +69,7 @@ jobs:
         environment-url: ${{ secrets.BuildEnvironmentUrl }}
         app-id: ${{ secrets.ClientID }}
         client-secret: ${{ secrets.PowerPlatformSPN }}
-        tenant-id: ${{ secrets.TentantID }}
+        tenant-id: ${{ secrets.TenantID }}
         solution-file: ${{ github.event.inputs.solution_outbound_folder }}/${{ github.event.inputs.solution_name }}.zip
         force-overwrite: true
         publish-changes: true
@@ -80,7 +80,7 @@ jobs:
         environment-url: ${{ secrets.BuildEnvironmentUrl }}
         app-id: ${{ secrets.ClientID }}
         client-secret: ${{ secrets.PowerPlatformSPN }}
-        tenant-id: ${{ secrets.TentantID }}
+        tenant-id: ${{ secrets.TenantID }}
         solution-name: ${{ github.event.inputs.solution_name }}
         managed: true
         solution-output-file: ${{ github.event.inputs.solution_shipping_folder }}/${{ github.event.inputs.solution_name }}.zip
@@ -117,7 +117,7 @@ jobs:
         environment-url: ${{ secrets.ProdEnvironmentUrl }}
         app-id: ${{ secrets.ClientID }}
         client-secret: ${{ secrets.PowerPlatformSPN }}
-        tenant-id: ${{ secrets.TentantID }}
+        tenant-id: ${{ secrets.TenantID }}
         solution-file: ${{ github.event.inputs.solution_release_folder }}/${{ github.event.inputs.solution_name }}.zip
         force-overwrite: true
         publish-changes: true
