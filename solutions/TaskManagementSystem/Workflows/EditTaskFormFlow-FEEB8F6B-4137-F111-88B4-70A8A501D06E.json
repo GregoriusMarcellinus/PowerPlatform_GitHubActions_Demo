@@ -1,0 +1,489 @@
+{
+  "properties": {
+    "connectionReferences": {
+      "shared_sharepointonline": {
+        "runtimeSource": "embedded",
+        "connection": {
+          "connectionReferenceLogicalName": "tms_SharePointAdmin"
+        },
+        "api": {
+          "name": "shared_sharepointonline"
+        }
+      }
+    },
+    "definition": {
+      "$schema": "https://schema.management.azure.com/providers/Microsoft.Logic/schemas/2016-06-01/workflowdefinition.json#",
+      "contentVersion": "1.0.0.0",
+      "parameters": {
+        "$authentication": {
+          "defaultValue": {},
+          "type": "SecureObject"
+        },
+        "$connections": {
+          "defaultValue": {},
+          "type": "Object"
+        },
+        "Task Management Site (tms_TaskManagementSite)": {
+          "defaultValue": "https://m365b467805.sharepoint.com/sites/TaskManagement",
+          "type": "String",
+          "metadata": {
+            "schemaName": "tms_TaskManagementSite"
+          }
+        },
+        "Task List (tms_TaskList)": {
+          "defaultValue": "2b09fc89-2c29-499b-bca9-cd2d764eaf3a",
+          "type": "String",
+          "metadata": {
+            "schemaName": "tms_TaskList"
+          }
+        },
+        "Executive Task Site (tms_ExecutiveTaskSite)": {
+          "defaultValue": "https://m365b467805.sharepoint.com/sites/ExecutiveTask",
+          "type": "String",
+          "metadata": {
+            "schemaName": "tms_ExecutiveTaskSite"
+          }
+        },
+        "Executive Working Y2026 Document Library (tms_ExecutiveWorkingY2026DocumentLibrary)": {
+          "defaultValue": "f69588e1-3e9f-42eb-ae92-a653c6a746ce",
+          "type": "String",
+          "metadata": {
+            "schemaName": "tms_ExecutiveWorkingY2026DocumentLibrary"
+          }
+        }
+      },
+      "triggers": {
+        "manual": {
+          "metadata": {
+            "operationMetadataId": "7e7f91e2-77c9-4a60-8a86-61cde6dd9a65"
+          },
+          "type": "Request",
+          "kind": "PowerAppV2",
+          "inputs": {
+            "schema": {
+              "type": "object",
+              "properties": {
+                "text": {
+                  "description": "",
+                  "title": "Value",
+                  "type": "string",
+                  "x-ms-content-hint": "TEXT",
+                  "x-ms-dynamically-added": true
+                },
+                "number": {
+                  "description": "Please enter a number",
+                  "title": "TaskCreatedbyUserRoleLevel",
+                  "type": "number",
+                  "x-ms-content-hint": "NUMBER",
+                  "x-ms-dynamically-added": true
+                }
+              },
+              "required": [
+                "text",
+                "number"
+              ]
+            }
+          }
+        }
+      },
+      "actions": {
+        "Respond_to_a_Power_App_or_flow": {
+          "runAfter": {
+            "Compose_-_Task_Response": [
+              "Succeeded"
+            ]
+          },
+          "type": "Response",
+          "kind": "PowerApp",
+          "inputs": {
+            "schema": {
+              "type": "object",
+              "properties": {
+                "success": {
+                  "title": "Success",
+                  "type": "boolean",
+                  "x-ms-content-hint": "BOOLEAN",
+                  "x-ms-dynamically-added": true
+                },
+                "task": {
+                  "title": "Task",
+                  "type": "string",
+                  "x-ms-content-hint": "TEXT",
+                  "x-ms-dynamically-added": true
+                }
+              },
+              "additionalProperties": {}
+            },
+            "statusCode": 200,
+            "body": {
+              "success": true,
+              "task": "@{outputs('Compose_-_Task_Response')}"
+            }
+          }
+        },
+        "Parse_JSON": {
+          "runAfter": {},
+          "type": "ParseJson",
+          "inputs": {
+            "content": "@triggerBody()?['text']",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "ID_GrandParent_Number": {
+                  "type": [
+                    "integer",
+                    "null"
+                  ]
+                },
+                "ID_Parent_Number": {
+                  "type": [
+                    "integer",
+                    "null"
+                  ]
+                },
+                "ID_Priority": {
+                  "type": [
+                    "integer",
+                    "null"
+                  ]
+                },
+                "ID_Status": {
+                  "type": [
+                    "integer",
+                    "null"
+                  ]
+                },
+                "ID_Task": {
+                  "type": [
+                    "integer",
+                    "null"
+                  ]
+                },
+                "is_task": {
+                  "type": "boolean"
+                },
+                "plan_finish_date": {
+                  "type": "string"
+                },
+                "plan_start_date": {
+                  "type": "string"
+                },
+                "task_descript": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "task_level": {
+                  "type": "integer"
+                },
+                "reminder_date": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "task_name": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        },
+        "Update_item_-_Task": {
+          "runAfter": {
+            "Parse_JSON": [
+              "Succeeded"
+            ]
+          },
+          "type": "OpenApiConnection",
+          "inputs": {
+            "parameters": {
+              "dataset": "@parameters('Task Management Site (tms_TaskManagementSite)')",
+              "table": "@parameters('Task List (tms_TaskList)')",
+              "id": "@body('Parse_JSON')?['ID_Task']",
+              "item/ID_Parent_Lookup/Id": "@body('Parse_JSON')?['ID_Parent_Number']",
+              "item/ID_Parent_Number": "@body('Parse_JSON')?['ID_Parent_Number']",
+              "item/ID_GrandParent_Lookup/Id": "@body('Parse_JSON')?['ID_GrandParent_Number']",
+              "item/ID_GrandParent_Number": "@body('Parse_JSON')?['ID_GrandParent_Number']",
+              "item/task_level": "@body('Parse_JSON')?['task_level']",
+              "item/is_task": "@body('Parse_JSON')?['is_task']",
+              "item/task_name": "@body('Parse_JSON')?['task_name']",
+              "item/task_description": "<p class=\"editor-paragraph\">@{body('Parse_JSON')?['task_descript']}</p>",
+              "item/ID_Priority/Id": "@body('Parse_JSON')?['ID_Priority']",
+              "item/plan_start_date": "@body('Parse_JSON')?['plan_start_date']",
+              "item/plan_finish_date": "@body('Parse_JSON')?['plan_finish_date']",
+              "item/ID_Status/Id": "@body('Parse_JSON')?['ID_Status']",
+              "item/reminder_date": "@body('Parse_JSON')?['reminder_date']"
+            },
+            "host": {
+              "apiId": "/providers/Microsoft.PowerApps/apis/shared_sharepointonline",
+              "operationId": "PatchItem",
+              "connectionName": "shared_sharepointonline"
+            }
+          }
+        },
+        "Compose_-_Task_Response": {
+          "runAfter": {
+            "Condition_-_Become_Root_Task": [
+              "Succeeded"
+            ]
+          },
+          "type": "Compose",
+          "inputs": {
+            "ID": "@{outputs('Update_item_-_Task')?['body/ID']}",
+            "task_level": "@{outputs('Update_item_-_Task')?['body/task_level']}",
+            "task_name": "@{outputs('Update_item_-_Task')?['body/task_name']}",
+            "task_duration": "@{outputs('Update_item_-_Task')?['body/task_duration']}",
+            "ID_GrandParent_Lookup": "@{outputs('Update_item_-_Task')?['body/ID_GrandParent_Lookup']}",
+            "ID_Parent_Lookup": "@{outputs('Update_item_-_Task')?['body/ID_Parent_Lookup']}",
+            "ID_Priority": "@{outputs('Update_item_-_Task')?['body/ID_Priority']}",
+            "task_description": "@{outputs('Update_item_-_Task')?['body/task_description']}",
+            "plan_start_date": "@{outputs('Update_item_-_Task')?['body/plan_start_date']}",
+            "plan_finish_date": "@{outputs('Update_item_-_Task')?['body/plan_finish_date']}",
+            "is_task": "@outputs('Update_item_-_Task')?['body/is_task']",
+            "ID_Status": "@{outputs('Update_item_-_Task')?['body/ID_Status']}",
+            "ID_User_Task_Created_By": "@{outputs('Update_item_-_Task')?['body/ID_User_Task_Created_By']}",
+            "Created": "@{outputs('Update_item_-_Task')?['body/Created']}",
+            "actual_start_date": "@{outputs('Update_item_-_Task')?['body/actual_start_date']}",
+            "actual_finish_date": "@{outputs('Update_item_-_Task')?['body/actual_finish_date']}",
+            "completion_date": "@{outputs('Update_item_-_Task')?['body/completion_date']}",
+            "ID_User_Task_Started_By": "@{outputs('Update_item_-_Task')?['body/ID_User_Task_Started_By']}",
+            "ID_Parent_Lookup_plan_start_date": "@{outputs('Update_item_-_Task')?['body/ID_Parent_Lookup_x003a__x0020_pl']}",
+            "ID_Parent_Lookup_plan_finish_date": "@{outputs('Update_item_-_Task')?['body/ID_Parent_Lookup_x003a__x0020_pl0']}",
+            "ID_Parent_Lookup_actual_start_date": "@{outputs('Update_item_-_Task')?['body/ID_Parent_Lookup_x003a__x0020_ac']}",
+            "ID_Parent_Lookup_actual_finish_date": "@{outputs('Update_item_-_Task')?['body/ID_Parent_Lookup_x003a__x0020_ac0']}",
+            "ID_Parent_Lookup_completion_date": "@{outputs('Update_item_-_Task')?['body/ID_Parent_Lookup_x003a__x0020_co']}",
+            "ID_Task_Scheduler": "@{outputs('Update_item_-_Task')?['body/ID_Task_Scheduler']}",
+            "reminder_date": "@{outputs('Update_item_-_Task')?['body/reminder_date']}",
+            "Modified": "@{outputs('Update_item_-_Task')?['body/Modified']}",
+            "approval_type": "@{outputs('Update_item_-_Task')?['body/approval_type']}",
+            "approval_rule": "@{outputs('Update_item_-_Task')?['body/approval_rule']}",
+            "ID_User_Task_Finished_By": "@{outputs('Update_item_-_Task')?['body/ID_User_Task_Finished_By']}"
+          }
+        },
+        "Condition_-_Become_Root_Task": {
+          "actions": {
+            "Send_an_HTTP_request_to_SharePoint_-_Task": {
+              "type": "OpenApiConnection",
+              "inputs": {
+                "parameters": {
+                  "dataset": "@parameters('Task Management Site (tms_TaskManagementSite)')",
+                  "parameters/method": "PATCH",
+                  "parameters/uri": "_api/web/lists/GetByTitle('Task')/items(@{outputs('Update_item_-_Task')?['body/ID']})",
+                  "parameters/headers": {
+                    "Accept": "application/json;odata=verbose",
+                    "Content-Type": "application/json;odata=verbose",
+                    "IF-MATCH": "*"
+                  },
+                  "parameters/body": "{\n   \"__metadata\": { \"type\": \"SP.Data.TaskListItem\" },\n   \"ID_Parent_LookupId\": null,\n\"ID_GrandParent_LookupId\": null\n}"
+                },
+                "host": {
+                  "apiId": "/providers/Microsoft.PowerApps/apis/shared_sharepointonline",
+                  "operationId": "HttpRequest",
+                  "connectionName": "shared_sharepointonline"
+                }
+              }
+            },
+            "Condition_-_Executive_Task": {
+              "actions": {
+                "Get_files_(properties_only)_-_Get_Folder_Name_-_CEO_Task": {
+                  "type": "OpenApiConnection",
+                  "inputs": {
+                    "parameters": {
+                      "dataset": "@parameters('Executive Task Site (tms_ExecutiveTaskSite)')",
+                      "table": "@parameters('Executive Working Y2026 Document Library (tms_ExecutiveWorkingY2026DocumentLibrary)')",
+                      "$filter": "ID_Task eq @{outputs('Update_item_-_Task')?['body/ID']}"
+                    },
+                    "host": {
+                      "apiId": "/providers/Microsoft.PowerApps/apis/shared_sharepointonline",
+                      "operationId": "GetFileItems",
+                      "connectionName": "shared_sharepointonline"
+                    }
+                  }
+                },
+                "Condition_-_Folder_Not_Created_Yet_-_CEO_Task": {
+                  "actions": {},
+                  "runAfter": {
+                    "Get_files_(properties_only)_-_Get_Folder_Name_-_CEO_Task": [
+                      "Succeeded"
+                    ],
+                    "Get_item_-Task_List": [
+                      "Succeeded"
+                    ]
+                  },
+                  "else": {
+                    "actions": {
+                      "Update_file_properties": {
+                        "type": "OpenApiConnection",
+                        "inputs": {
+                          "parameters": {
+                            "dataset": "@parameters('Executive Task Site (tms_ExecutiveTaskSite)')",
+                            "table": "@parameters('Executive Working Y2026 Document Library (tms_ExecutiveWorkingY2026DocumentLibrary)')",
+                            "id": "@first(outputs('Get_files_(properties_only)_-_Get_Folder_Name_-_CEO_Task')?['body/value'])?['ID']",
+                            "item/ID_Task": "@outputs('Get_item_-Task_List')?['body/ID']",
+                            "item/task_root_number": "@outputs('Get_item_-Task_List')?['body/ID_GrandParent_Lookup/Id']",
+                            "item/task_level": "@outputs('Get_item_-Task_List')?['body/task_level']",
+                            "item/ID_Task_Scheduler": "@outputs('Get_item_-Task_List')?['body/ID_Task_Scheduler/Id']"
+                          },
+                          "host": {
+                            "apiId": "/providers/Microsoft.PowerApps/apis/shared_sharepointonline",
+                            "operationId": "PatchFileItem",
+                            "connectionName": "shared_sharepointonline"
+                          }
+                        }
+                      }
+                    }
+                  },
+                  "expression": {
+                    "and": [
+                      {
+                        "equals": [
+                          "@empty(outputs('Get_files_(properties_only)_-_Get_Folder_Name_-_CEO_Task')?['body/value'])",
+                          true
+                        ]
+                      }
+                    ]
+                  },
+                  "type": "If"
+                },
+                "Get_item_-Task_List": {
+                  "type": "OpenApiConnection",
+                  "inputs": {
+                    "parameters": {
+                      "dataset": "@parameters('Task Management Site (tms_TaskManagementSite)')",
+                      "table": "@parameters('Task List (tms_TaskList)')",
+                      "id": "@outputs('Update_item_-_Task')?['body/ID']"
+                    },
+                    "host": {
+                      "apiId": "/providers/Microsoft.PowerApps/apis/shared_sharepointonline",
+                      "operationId": "GetItem",
+                      "connectionName": "shared_sharepointonline"
+                    }
+                  }
+                }
+              },
+              "runAfter": {
+                "Send_an_HTTP_request_to_SharePoint_-_Task": [
+                  "Succeeded"
+                ]
+              },
+              "else": {
+                "actions": {}
+              },
+              "expression": {
+                "and": [
+                  {
+                    "equals": [
+                      "@triggerBody()?['number']",
+                      4
+                    ]
+                  }
+                ]
+              },
+              "type": "If"
+            }
+          },
+          "runAfter": {
+            "Update_item_-_Task": [
+              "Succeeded"
+            ]
+          },
+          "else": {
+            "actions": {
+              "Condition_-_Executive_Task_1": {
+                "actions": {
+                  "Get_files_(properties_only)_-_Get_Folder_Name_-_CEO_Task_1": {
+                    "type": "OpenApiConnection",
+                    "inputs": {
+                      "parameters": {
+                        "dataset": "@parameters('Executive Task Site (tms_ExecutiveTaskSite)')",
+                        "table": "@parameters('Executive Working Y2026 Document Library (tms_ExecutiveWorkingY2026DocumentLibrary)')",
+                        "$filter": "ID_Task eq @{outputs('Update_item_-_Task')?['body/ID']}"
+                      },
+                      "host": {
+                        "apiId": "/providers/Microsoft.PowerApps/apis/shared_sharepointonline",
+                        "operationId": "GetFileItems",
+                        "connectionName": "shared_sharepointonline"
+                      }
+                    }
+                  },
+                  "Condition_-_Folder_Not_Created_Yet_-_CEO_Task_1": {
+                    "actions": {},
+                    "runAfter": {
+                      "Get_files_(properties_only)_-_Get_Folder_Name_-_CEO_Task_1": [
+                        "Succeeded"
+                      ]
+                    },
+                    "else": {
+                      "actions": {
+                        "Update_file_properties_1": {
+                          "type": "OpenApiConnection",
+                          "inputs": {
+                            "parameters": {
+                              "dataset": "@parameters('Executive Task Site (tms_ExecutiveTaskSite)')",
+                              "table": "@parameters('Executive Working Y2026 Document Library (tms_ExecutiveWorkingY2026DocumentLibrary)')",
+                              "id": "@first(outputs('Get_files_(properties_only)_-_Get_Folder_Name_-_CEO_Task_1')?['body/value'])?['ID']",
+                              "item/ID_Task": "@outputs('Update_item_-_Task')?['body/ID']",
+                              "item/task_root_number": "@outputs('Update_item_-_Task')?['body/ID_GrandParent_Lookup/Id']",
+                              "item/task_level": "@outputs('Update_item_-_Task')?['body/task_level']",
+                              "item/ID_Task_Scheduler": "@outputs('Update_item_-_Task')?['body/ID_Task_Scheduler/Id']"
+                            },
+                            "host": {
+                              "apiId": "/providers/Microsoft.PowerApps/apis/shared_sharepointonline",
+                              "operationId": "PatchFileItem",
+                              "connectionName": "shared_sharepointonline"
+                            }
+                          }
+                        }
+                      }
+                    },
+                    "expression": {
+                      "and": [
+                        {
+                          "equals": [
+                            "@empty(outputs('Get_files_(properties_only)_-_Get_Folder_Name_-_CEO_Task_1')?['body/value'])",
+                            true
+                          ]
+                        }
+                      ]
+                    },
+                    "type": "If"
+                  }
+                },
+                "runAfter": {},
+                "else": {
+                  "actions": {}
+                },
+                "expression": {
+                  "and": [
+                    {
+                      "equals": [
+                        "@triggerBody()?['number']",
+                        4
+                      ]
+                    }
+                  ]
+                },
+                "type": "If"
+              }
+            }
+          },
+          "expression": {
+            "and": [
+              {
+                "equals": [
+                  "@equals(body('Parse_JSON')?['ID_GrandParent_Number'], null)",
+                  true
+                ]
+              }
+            ]
+          },
+          "type": "If"
+        }
+      }
+    },
+    "templateName": null
+  },
+  "schemaVersion": "1.0.0.0"
+}

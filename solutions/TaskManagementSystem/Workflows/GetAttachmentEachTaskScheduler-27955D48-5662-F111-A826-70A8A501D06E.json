@@ -1,0 +1,381 @@
+{
+  "properties": {
+    "connectionReferences": {
+      "shared_sharepointonline-1": {
+        "runtimeSource": "embedded",
+        "connection": {
+          "connectionReferenceLogicalName": "tms_SharePointAdmin"
+        },
+        "api": {
+          "name": "shared_sharepointonline"
+        }
+      }
+    },
+    "definition": {
+      "$schema": "https://schema.management.azure.com/providers/Microsoft.Logic/schemas/2016-06-01/workflowdefinition.json#",
+      "contentVersion": "1.0.0.0",
+      "parameters": {
+        "$authentication": {
+          "defaultValue": {},
+          "type": "SecureObject"
+        },
+        "$connections": {
+          "defaultValue": {},
+          "type": "Object"
+        },
+        "Task Management Site (tms_TaskManagementSite)": {
+          "defaultValue": "https://m365b467805.sharepoint.com/sites/TaskManagement",
+          "type": "String",
+          "metadata": {
+            "schemaName": "tms_TaskManagementSite"
+          }
+        },
+        "Task Scheduler Reference Document Library (tms_TaskSchedulerReferenceDocumentLibrary)": {
+          "defaultValue": "c85dd586-b0b4-416e-b9e1-4ef2387f1238",
+          "type": "String",
+          "metadata": {
+            "schemaName": "tms_TaskSchedulerReferenceDocumentLibrary"
+          }
+        },
+        "Executive Task Site (tms_ExecutiveTaskSite)": {
+          "defaultValue": "https://m365b467805.sharepoint.com/sites/ExecutiveTask",
+          "type": "String",
+          "metadata": {
+            "schemaName": "tms_ExecutiveTaskSite"
+          }
+        },
+        "Executive Task Scheduler Reference Document Library (tms_ExecutiveTaskSchedulerReferenceDocumentLibrary)": {
+          "defaultValue": "487c6326-2ebb-42b1-8295-aa0da85a48ce",
+          "type": "String",
+          "metadata": {
+            "schemaName": "tms_ExecutiveTaskSchedulerReferenceDocumentLibrary"
+          }
+        },
+        "Document Library Name for Executive Task Scheduler Reference (tms_DocumentLibraryNameforExecutiveTaskSchedulerReference)": {
+          "defaultValue": "Executive Task Scheduler Reference",
+          "type": "String",
+          "metadata": {
+            "schemaName": "tms_DocumentLibraryNameforExecutiveTaskSchedulerReference"
+          }
+        },
+        "Document Library Name for Task Scheduler Reference (tms_DocumentLibraryNameforTaskSchedulerReference)": {
+          "defaultValue": "Task Scheduler Reference",
+          "type": "String",
+          "metadata": {
+            "schemaName": "tms_DocumentLibraryNameforTaskSchedulerReference"
+          }
+        }
+      },
+      "triggers": {
+        "manual": {
+          "metadata": {
+            "operationMetadataId": "ae14d66e-468b-45d1-b9e8-aeadf593cefb"
+          },
+          "type": "Request",
+          "kind": "PowerAppV2",
+          "inputs": {
+            "schema": {
+              "type": "object",
+              "properties": {
+                "number": {
+                  "title": "ID_Task_Scheduler",
+                  "type": "number",
+                  "x-ms-dynamically-added": true,
+                  "description": "Please enter a number",
+                  "x-ms-content-hint": "NUMBER"
+                },
+                "number_1": {
+                  "description": "Please enter a number",
+                  "title": "TaskSchedulerFromUserLevel",
+                  "type": "number",
+                  "x-ms-content-hint": "NUMBER",
+                  "x-ms-dynamically-added": true
+                }
+              },
+              "required": [
+                "number",
+                "number_1"
+              ]
+            }
+          }
+        }
+      },
+      "actions": {
+        "Condition_Is_CEO_Task": {
+          "actions": {
+            "Get_files_(properties_only)_-_Get_Folder_Name_-_CEO_Task": {
+              "type": "OpenApiConnection",
+              "inputs": {
+                "parameters": {
+                  "dataset": "@parameters('Executive Task Site (tms_ExecutiveTaskSite)')",
+                  "table": "@parameters('Executive Task Scheduler Reference Document Library (tms_ExecutiveTaskSchedulerReferenceDocumentLibrary)')",
+                  "$filter": "ID_Task_Scheduler eq @{triggerBody()?['number']}"
+                },
+                "host": {
+                  "apiId": "/providers/Microsoft.PowerApps/apis/shared_sharepointonline",
+                  "operationId": "GetFileItems",
+                  "connectionName": "shared_sharepointonline-1"
+                }
+              }
+            },
+            "Condition_-_Is_it_Empty_-_CEO_Task": {
+              "actions": {
+                "Respond_to_a_Power_App_or_flow_-_Working_2": {
+                  "type": "Response",
+                  "kind": "PowerApp",
+                  "inputs": {
+                    "schema": {
+                      "type": "object",
+                      "properties": {
+                        "value": {
+                          "title": "Value",
+                          "type": "string",
+                          "x-ms-content-hint": "TEXT",
+                          "x-ms-dynamically-added": true
+                        }
+                      },
+                      "additionalProperties": {}
+                    },
+                    "statusCode": 200,
+                    "body": {
+                      "value": "[]"
+                    }
+                  }
+                }
+              },
+              "runAfter": {
+                "Get_files_(properties_only)_-_Get_Folder_Name_-_CEO_Task": [
+                  "Succeeded"
+                ]
+              },
+              "else": {
+                "actions": {
+                  "Get_files_(properties_only)_-_Files_in_Folder_-_CEO_Task": {
+                    "type": "OpenApiConnection",
+                    "inputs": {
+                      "parameters": {
+                        "dataset": "@parameters('Executive Task Site (tms_ExecutiveTaskSite)')",
+                        "table": "@parameters('Executive Task Scheduler Reference Document Library (tms_ExecutiveTaskSchedulerReferenceDocumentLibrary)')",
+                        "folderPath": "@{parameters('Document Library Name for Executive Task Scheduler Reference (tms_DocumentLibraryNameforExecutiveTaskSchedulerReference)')}/@{first(outputs('Get_files_(properties_only)_-_Get_Folder_Name_-_CEO_Task')?['body/value'])?['{Name}']}"
+                      },
+                      "host": {
+                        "apiId": "/providers/Microsoft.PowerApps/apis/shared_sharepointonline",
+                        "operationId": "GetFileItems",
+                        "connectionName": "shared_sharepointonline-1"
+                      }
+                    }
+                  },
+                  "Select_-_CEO_Task": {
+                    "runAfter": {
+                      "Get_files_(properties_only)_-_Files_in_Folder_-_CEO_Task": [
+                        "Succeeded"
+                      ]
+                    },
+                    "type": "Select",
+                    "inputs": {
+                      "from": "@outputs('Get_files_(properties_only)_-_Files_in_Folder_-_CEO_Task')?['body/value']",
+                      "select": {
+                        "ID": "@item()?['ID']",
+                        "File name with extension": "@{item()?['{FilenameWithExtension}']}",
+                        "Link to item": "@{item()?['{Link}']}",
+                        "File Identifier": "@{item()?['{Identifier}']}",
+                        "Name": "@{item()?['{Name}']}",
+                        "File_Uploaded_By": "@item()?['File_Uploaded_By']",
+                        "Created": "@item()?['Created']",
+                        "Modified": "@item()?['Modified']",
+                        "FullPath": "@{item()?['{FullPath}']}",
+                        "VersionNumber": "@{item()?['{VersionNumber}']}"
+                      }
+                    }
+                  },
+                  "Respond_to_a_Power_App_or_flow_-_Working_3": {
+                    "runAfter": {
+                      "Select_-_CEO_Task": [
+                        "Succeeded"
+                      ]
+                    },
+                    "type": "Response",
+                    "kind": "PowerApp",
+                    "inputs": {
+                      "schema": {
+                        "type": "object",
+                        "properties": {
+                          "value": {
+                            "title": "Value",
+                            "type": "string",
+                            "x-ms-content-hint": "TEXT",
+                            "x-ms-dynamically-added": true
+                          }
+                        },
+                        "additionalProperties": {}
+                      },
+                      "statusCode": 200,
+                      "body": {
+                        "value": "@{body('Select_-_CEO_Task')}"
+                      }
+                    }
+                  }
+                }
+              },
+              "expression": {
+                "and": [
+                  {
+                    "equals": [
+                      "@empty(outputs('Get_files_(properties_only)_-_Get_Folder_Name_-_CEO_Task')?['body/value'])",
+                      true
+                    ]
+                  }
+                ]
+              },
+              "type": "If"
+            }
+          },
+          "runAfter": {},
+          "else": {
+            "actions": {
+              "Get_files_(properties_only)_-_Get_Folder_Name": {
+                "type": "OpenApiConnection",
+                "inputs": {
+                  "parameters": {
+                    "dataset": "@parameters('Task Management Site (tms_TaskManagementSite)')",
+                    "table": "@parameters('Task Scheduler Reference Document Library (tms_TaskSchedulerReferenceDocumentLibrary)')",
+                    "$filter": "ID_Task_Scheduler eq @{triggerBody()?['number']}"
+                  },
+                  "host": {
+                    "apiId": "/providers/Microsoft.PowerApps/apis/shared_sharepointonline",
+                    "operationId": "GetFileItems",
+                    "connectionName": "shared_sharepointonline-1"
+                  }
+                }
+              },
+              "Condition_-_Is_it_Empty": {
+                "actions": {
+                  "Respond_to_a_Power_App_or_flow_-_Working_1": {
+                    "type": "Response",
+                    "kind": "PowerApp",
+                    "inputs": {
+                      "schema": {
+                        "type": "object",
+                        "properties": {
+                          "value": {
+                            "title": "Value",
+                            "type": "string",
+                            "x-ms-content-hint": "TEXT",
+                            "x-ms-dynamically-added": true
+                          }
+                        },
+                        "additionalProperties": {}
+                      },
+                      "statusCode": 200,
+                      "body": {
+                        "value": "[]"
+                      }
+                    }
+                  }
+                },
+                "runAfter": {
+                  "Get_files_(properties_only)_-_Get_Folder_Name": [
+                    "Succeeded"
+                  ]
+                },
+                "else": {
+                  "actions": {
+                    "Get_files_(properties_only)_-_Files_in_Folder": {
+                      "type": "OpenApiConnection",
+                      "inputs": {
+                        "parameters": {
+                          "dataset": "@parameters('Task Management Site (tms_TaskManagementSite)')",
+                          "table": "@parameters('Task Scheduler Reference Document Library (tms_TaskSchedulerReferenceDocumentLibrary)')",
+                          "folderPath": "@{parameters('Document Library Name for Task Scheduler Reference (tms_DocumentLibraryNameforTaskSchedulerReference)')}/@{first(outputs('Get_files_(properties_only)_-_Get_Folder_Name')?['body/value'])?['{Name}']}"
+                        },
+                        "host": {
+                          "apiId": "/providers/Microsoft.PowerApps/apis/shared_sharepointonline",
+                          "operationId": "GetFileItems",
+                          "connectionName": "shared_sharepointonline-1"
+                        }
+                      }
+                    },
+                    "Select": {
+                      "runAfter": {
+                        "Get_files_(properties_only)_-_Files_in_Folder": [
+                          "Succeeded"
+                        ]
+                      },
+                      "type": "Select",
+                      "inputs": {
+                        "from": "@outputs('Get_files_(properties_only)_-_Files_in_Folder')?['body/value']",
+                        "select": {
+                          "ID": "@item()?['ID']",
+                          "File name with extension": "@{item()?['{FilenameWithExtension}']}",
+                          "Link to item": "@{item()?['{Link}']}",
+                          "File Identifier": "@{item()?['{Identifier}']}",
+                          "Name": "@{item()?['{Name}']}",
+                          "File_Uploaded_By": "@item()?['File_Uploaded_By']",
+                          "Created": "@item()?['Created']",
+                          "Modified": "@item()?['Modified']",
+                          "FullPath": "@{item()?['{FullPath}']}",
+                          "VersionNumber": "@{item()?['{VersionNumber}']}"
+                        }
+                      }
+                    },
+                    "Respond_to_a_Power_App_or_flow_-_Working": {
+                      "runAfter": {
+                        "Select": [
+                          "Succeeded"
+                        ]
+                      },
+                      "type": "Response",
+                      "kind": "PowerApp",
+                      "inputs": {
+                        "schema": {
+                          "type": "object",
+                          "properties": {
+                            "value": {
+                              "title": "Value",
+                              "type": "string",
+                              "x-ms-content-hint": "TEXT",
+                              "x-ms-dynamically-added": true
+                            }
+                          },
+                          "additionalProperties": {}
+                        },
+                        "statusCode": 200,
+                        "body": {
+                          "value": "@{body('Select')}"
+                        }
+                      }
+                    }
+                  }
+                },
+                "expression": {
+                  "and": [
+                    {
+                      "equals": [
+                        "@empty(outputs('Get_files_(properties_only)_-_Get_Folder_Name')?['body/value'])",
+                        true
+                      ]
+                    }
+                  ]
+                },
+                "type": "If"
+              }
+            }
+          },
+          "expression": {
+            "and": [
+              {
+                "equals": [
+                  "@triggerBody()?['number_1']",
+                  4
+                ]
+              }
+            ]
+          },
+          "type": "If"
+        }
+      }
+    },
+    "templateName": null
+  },
+  "schemaVersion": "1.0.0.0"
+}

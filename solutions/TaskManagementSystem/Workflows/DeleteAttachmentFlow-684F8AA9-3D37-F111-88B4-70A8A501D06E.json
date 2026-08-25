@@ -1,0 +1,465 @@
+{
+  "properties": {
+    "connectionReferences": {
+      "shared_sharepointonline": {
+        "runtimeSource": "embedded",
+        "connection": {
+          "connectionReferenceLogicalName": "tms_SharePointAdmin"
+        },
+        "api": {
+          "name": "shared_sharepointonline"
+        }
+      }
+    },
+    "definition": {
+      "$schema": "https://schema.management.azure.com/providers/Microsoft.Logic/schemas/2016-06-01/workflowdefinition.json#",
+      "contentVersion": "undefined",
+      "parameters": {
+        "$authentication": {
+          "defaultValue": {},
+          "type": "SecureObject"
+        },
+        "$connections": {
+          "defaultValue": {},
+          "type": "Object"
+        },
+        "Task Management Site (tms_TaskManagementSite)": {
+          "defaultValue": "https://m365x42752428.sharepoint.com/sites/TaskManagement",
+          "type": "String",
+          "metadata": {
+            "schemaName": "tms_TaskManagementSite"
+          }
+        },
+        "Executive Task Site (tms_ExecutiveTaskSite)": {
+          "defaultValue": "https://m365x42752428.sharepoint.com/sites/ExecutiveTask",
+          "type": "String",
+          "metadata": {
+            "schemaName": "tms_ExecutiveTaskSite"
+          }
+        },
+        "Site Name for Task Management Site (tms_SiteNameforTaskManagementSite)": {
+          "defaultValue": "Task Management",
+          "type": "String",
+          "metadata": {
+            "schemaName": "tms_SiteNameforTaskManagementSite"
+          }
+        },
+        "Site Name for Executive Task Site (tms_SiteNameforExecutiveTaskSite)": {
+          "defaultValue": "Executive Task",
+          "type": "String",
+          "metadata": {
+            "schemaName": "tms_SiteNameforExecutiveTaskSite"
+          }
+        }
+      },
+      "triggers": {
+        "manual": {
+          "metadata": {
+            "operationMetadataId": "9ae0229c-c797-450d-aa47-fee28c595d1a"
+          },
+          "type": "Request",
+          "kind": "PowerAppV2",
+          "inputs": {
+            "schema": {
+              "type": "object",
+              "properties": {
+                "text": {
+                  "description": "Please enter your input",
+                  "title": "File_Identifier",
+                  "type": "string",
+                  "x-ms-content-hint": "TEXT",
+                  "x-ms-dynamically-added": true
+                },
+                "number": {
+                  "description": "Please enter a number",
+                  "title": "TaskFromUserLevel",
+                  "type": "number",
+                  "x-ms-content-hint": "NUMBER",
+                  "x-ms-dynamically-added": true
+                }
+              },
+              "required": [
+                "text",
+                "number"
+              ]
+            }
+          }
+        }
+      },
+      "actions": {
+        "Condition_Is_CEO_Task": {
+          "actions": {
+            "Delete_file_CEO_Task": {
+              "runAfter": {
+                "Get_folder_metadata_-_CEO_Task": [
+                  "TimedOut",
+                  "Skipped",
+                  "Failed"
+                ]
+              },
+              "type": "OpenApiConnection",
+              "inputs": {
+                "parameters": {
+                  "dataset": "@parameters('Executive Task Site (tms_ExecutiveTaskSite)')",
+                  "id": "@triggerBody()?['text']"
+                },
+                "host": {
+                  "apiId": "/providers/Microsoft.PowerApps/apis/shared_sharepointonline",
+                  "operationId": "DeleteFile",
+                  "connectionName": "shared_sharepointonline"
+                }
+              }
+            },
+            "Respond_to_a_Power_App_or_flow_1": {
+              "runAfter": {
+                "Delete_file_CEO_Task": [
+                  "Succeeded"
+                ]
+              },
+              "metadata": {
+                "operationMetadataId": "0f544e0e-4ac8-41f3-a2b4-d9a36cf62d9d"
+              },
+              "type": "Response",
+              "kind": "PowerApp",
+              "inputs": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "title": "Success",
+                      "x-ms-dynamically-added": true,
+                      "type": "boolean"
+                    }
+                  },
+                  "additionalProperties": {}
+                },
+                "statusCode": 200,
+                "body": {
+                  "success": true
+                }
+              }
+            },
+            "Respond_to_a_Power_App_or_flow_-_Locked_1": {
+              "runAfter": {
+                "Delete_file_CEO_Task": [
+                  "Failed"
+                ]
+              },
+              "metadata": {
+                "operationMetadataId": "0f544e0e-4ac8-41f3-a2b4-d9a36cf62d9d"
+              },
+              "type": "Response",
+              "kind": "PowerApp",
+              "inputs": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "title": "Success",
+                      "x-ms-dynamically-added": true,
+                      "type": "boolean"
+                    }
+                  },
+                  "additionalProperties": {}
+                },
+                "statusCode": 200,
+                "body": {
+                  "success": false
+                }
+              }
+            },
+            "Get_folder_metadata_-_CEO_Task": {
+              "type": "OpenApiConnection",
+              "inputs": {
+                "parameters": {
+                  "dataset": "@parameters('Executive Task Site (tms_ExecutiveTaskSite)')",
+                  "id": "@triggerBody()?['text']"
+                },
+                "host": {
+                  "apiId": "/providers/Microsoft.PowerApps/apis/shared_sharepointonline",
+                  "operationId": "GetFolderMetadata",
+                  "connectionName": "shared_sharepointonline"
+                }
+              }
+            },
+            "Send_an_HTTP_request_to_SharePoint_-_Delete_OneNote_CEO_Task": {
+              "runAfter": {
+                "Get_folder_metadata_-_CEO_Task": [
+                  "Succeeded"
+                ]
+              },
+              "type": "OpenApiConnection",
+              "inputs": {
+                "parameters": {
+                  "dataset": "@parameters('Executive Task Site (tms_ExecutiveTaskSite)')",
+                  "parameters/method": "POST",
+                  "parameters/uri": "@concat(\r\n    '_api/web/GetFolderByServerRelativePath(decodedurl=''/sites/',\r\n    replace(parameters('Site Name for Executive Task Site (tms_SiteNameforExecutiveTaskSite)'), ' ', ''),\r\n    outputs('Get_folder_metadata_-_CEO_Task')?['body/Path'],\r\n    ''')/recycle()'\r\n)",
+                  "parameters/headers": {
+                    "IF-MATCH": "*",
+                    "X-HTTP-Method": "DELETE"
+                  }
+                },
+                "host": {
+                  "apiId": "/providers/Microsoft.PowerApps/apis/shared_sharepointonline",
+                  "operationId": "HttpRequest",
+                  "connectionName": "shared_sharepointonline"
+                }
+              }
+            },
+            "Respond_to_a_Power_App_or_flow_1_1": {
+              "runAfter": {
+                "Send_an_HTTP_request_to_SharePoint_-_Delete_OneNote_CEO_Task": [
+                  "Succeeded"
+                ]
+              },
+              "metadata": {
+                "operationMetadataId": "0f544e0e-4ac8-41f3-a2b4-d9a36cf62d9d"
+              },
+              "type": "Response",
+              "kind": "PowerApp",
+              "inputs": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "title": "Success",
+                      "x-ms-dynamically-added": true,
+                      "type": "boolean"
+                    }
+                  },
+                  "additionalProperties": {}
+                },
+                "statusCode": 200,
+                "body": {
+                  "success": true
+                }
+              }
+            },
+            "Respond_to_a_Power_App_or_flow_-_Locked_1_1": {
+              "runAfter": {
+                "Send_an_HTTP_request_to_SharePoint_-_Delete_OneNote_CEO_Task": [
+                  "Failed"
+                ]
+              },
+              "metadata": {
+                "operationMetadataId": "0f544e0e-4ac8-41f3-a2b4-d9a36cf62d9d"
+              },
+              "type": "Response",
+              "kind": "PowerApp",
+              "inputs": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": {
+                      "title": "Success",
+                      "x-ms-dynamically-added": true,
+                      "type": "boolean"
+                    }
+                  },
+                  "additionalProperties": {}
+                },
+                "statusCode": 200,
+                "body": {
+                  "success": false
+                }
+              }
+            }
+          },
+          "runAfter": {},
+          "else": {
+            "actions": {
+              "Delete_file": {
+                "runAfter": {
+                  "Get_folder_metadata": [
+                    "TimedOut",
+                    "Skipped",
+                    "Failed"
+                  ]
+                },
+                "type": "OpenApiConnection",
+                "inputs": {
+                  "parameters": {
+                    "dataset": "@parameters('Task Management Site (tms_TaskManagementSite)')",
+                    "id": "@triggerBody()?['text']"
+                  },
+                  "host": {
+                    "apiId": "/providers/Microsoft.PowerApps/apis/shared_sharepointonline",
+                    "operationId": "DeleteFile",
+                    "connectionName": "shared_sharepointonline"
+                  }
+                }
+              },
+              "Respond_to_a_Power_App_or_flow": {
+                "runAfter": {
+                  "Delete_file": [
+                    "Succeeded"
+                  ]
+                },
+                "metadata": {
+                  "operationMetadataId": "0f544e0e-4ac8-41f3-a2b4-d9a36cf62d9d"
+                },
+                "type": "Response",
+                "kind": "PowerApp",
+                "inputs": {
+                  "schema": {
+                    "type": "object",
+                    "properties": {
+                      "success": {
+                        "title": "Success",
+                        "x-ms-dynamically-added": true,
+                        "type": "boolean"
+                      }
+                    },
+                    "additionalProperties": {}
+                  },
+                  "statusCode": 200,
+                  "body": {
+                    "success": true
+                  }
+                }
+              },
+              "Respond_to_a_Power_App_or_flow_-_Locked": {
+                "runAfter": {
+                  "Delete_file": [
+                    "Failed"
+                  ]
+                },
+                "metadata": {
+                  "operationMetadataId": "0f544e0e-4ac8-41f3-a2b4-d9a36cf62d9d"
+                },
+                "type": "Response",
+                "kind": "PowerApp",
+                "inputs": {
+                  "schema": {
+                    "type": "object",
+                    "properties": {
+                      "success": {
+                        "title": "Success",
+                        "x-ms-dynamically-added": true,
+                        "type": "boolean"
+                      }
+                    },
+                    "additionalProperties": {}
+                  },
+                  "statusCode": 200,
+                  "body": {
+                    "success": false
+                  }
+                }
+              },
+              "Get_folder_metadata": {
+                "type": "OpenApiConnection",
+                "inputs": {
+                  "parameters": {
+                    "dataset": "@parameters('Task Management Site (tms_TaskManagementSite)')",
+                    "id": "@triggerBody()?['text']"
+                  },
+                  "host": {
+                    "apiId": "/providers/Microsoft.PowerApps/apis/shared_sharepointonline",
+                    "operationId": "GetFolderMetadata",
+                    "connectionName": "shared_sharepointonline"
+                  }
+                }
+              },
+              "Send_an_HTTP_request_to_SharePoint_-_Delete_OneNote": {
+                "runAfter": {
+                  "Get_folder_metadata": [
+                    "Succeeded"
+                  ]
+                },
+                "type": "OpenApiConnection",
+                "inputs": {
+                  "parameters": {
+                    "dataset": "@parameters('Task Management Site (tms_TaskManagementSite)')",
+                    "parameters/method": "POST",
+                    "parameters/uri": "@concat(\r\n'_api/web/GetFolderByServerRelativePath(decodedurl=''/sites/',\r\nreplace(parameters('Site Name for Task Management Site (tms_SiteNameforTaskManagementSite)'), ' ', ''),\r\noutputs('Get_folder_metadata')?['body/Path'],\r\n''')/recycle()'\r\n)\r\n\r\n",
+                    "parameters/headers": {
+                      "IF-MATCH": "*",
+                      "X-HTTP-Method": "DELETE"
+                    }
+                  },
+                  "host": {
+                    "apiId": "/providers/Microsoft.PowerApps/apis/shared_sharepointonline",
+                    "operationId": "HttpRequest",
+                    "connectionName": "shared_sharepointonline"
+                  }
+                }
+              },
+              "Respond_to_a_Power_App_or_flow_1_1_1": {
+                "runAfter": {
+                  "Send_an_HTTP_request_to_SharePoint_-_Delete_OneNote": [
+                    "Succeeded"
+                  ]
+                },
+                "metadata": {
+                  "operationMetadataId": "0f544e0e-4ac8-41f3-a2b4-d9a36cf62d9d"
+                },
+                "type": "Response",
+                "kind": "PowerApp",
+                "inputs": {
+                  "schema": {
+                    "type": "object",
+                    "properties": {
+                      "success": {
+                        "title": "Success",
+                        "x-ms-dynamically-added": true,
+                        "type": "boolean"
+                      }
+                    },
+                    "additionalProperties": {}
+                  },
+                  "statusCode": 200,
+                  "body": {
+                    "success": true
+                  }
+                }
+              },
+              "Respond_to_a_Power_App_or_flow_-_Locked_1_1_1": {
+                "runAfter": {
+                  "Send_an_HTTP_request_to_SharePoint_-_Delete_OneNote": [
+                    "Failed"
+                  ]
+                },
+                "metadata": {
+                  "operationMetadataId": "0f544e0e-4ac8-41f3-a2b4-d9a36cf62d9d"
+                },
+                "type": "Response",
+                "kind": "PowerApp",
+                "inputs": {
+                  "schema": {
+                    "type": "object",
+                    "properties": {
+                      "success": {
+                        "title": "Success",
+                        "x-ms-dynamically-added": true,
+                        "type": "boolean"
+                      }
+                    },
+                    "additionalProperties": {}
+                  },
+                  "statusCode": 200,
+                  "body": {
+                    "success": false
+                  }
+                }
+              }
+            }
+          },
+          "expression": {
+            "and": [
+              {
+                "equals": [
+                  "@triggerBody()?['number']",
+                  4
+                ]
+              }
+            ]
+          },
+          "type": "If"
+        }
+      }
+    },
+    "templateName": null
+  },
+  "schemaVersion": "1.0.0.0"
+}

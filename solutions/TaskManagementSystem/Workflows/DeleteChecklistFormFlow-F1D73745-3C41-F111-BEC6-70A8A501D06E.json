@@ -1,0 +1,385 @@
+{
+  "properties": {
+    "connectionReferences": {
+      "shared_sharepointonline-1": {
+        "runtimeSource": "embedded",
+        "connection": {
+          "connectionReferenceLogicalName": "tms_SharePointAdmin"
+        },
+        "api": {
+          "name": "shared_sharepointonline"
+        }
+      },
+      "shared_teams": {
+        "runtimeSource": "invoker",
+        "connection": {
+          "connectionReferenceLogicalName": "tms_sharedteams_7e1c0"
+        },
+        "api": {
+          "name": "shared_teams"
+        }
+      },
+      "shared_office365": {
+        "runtimeSource": "invoker",
+        "connection": {
+          "connectionReferenceLogicalName": "tms_sharedoffice365_d642d"
+        },
+        "api": {
+          "name": "shared_office365"
+        }
+      }
+    },
+    "definition": {
+      "$schema": "https://schema.management.azure.com/providers/Microsoft.Logic/schemas/2016-06-01/workflowdefinition.json#",
+      "contentVersion": "1.0.0.0",
+      "parameters": {
+        "$authentication": {
+          "defaultValue": {},
+          "type": "SecureObject"
+        },
+        "$connections": {
+          "defaultValue": {},
+          "type": "Object"
+        },
+        "Task Management Site (tms_TaskManagementSite)": {
+          "defaultValue": "https://m365b467805.sharepoint.com/sites/TaskManagement",
+          "type": "String",
+          "metadata": {
+            "schemaName": "tms_TaskManagementSite"
+          }
+        },
+        "Checklist List (tms_ChecklistList)": {
+          "defaultValue": "c0d32f4f-d4e8-43b9-8445-0ecd9b904004",
+          "type": "String",
+          "metadata": {
+            "schemaName": "tms_ChecklistList"
+          }
+        },
+        "Task Assigned To Person List (tms_TaskAssignedToPersonList)": {
+          "defaultValue": "14f77253-8e43-4f56-9f1e-6e6b0ba1fb23",
+          "type": "String",
+          "metadata": {
+            "schemaName": "tms_TaskAssignedToPersonList"
+          }
+        },
+        "Task Assigned To Division List (tms_TaskAssignedToDivisionList)": {
+          "defaultValue": "e59fc654-0a6c-469d-9edb-10b069db7077",
+          "type": "String",
+          "metadata": {
+            "schemaName": "tms_TaskAssignedToDivisionList"
+          }
+        },
+        "Apps URL (tms_AppsURL)": {
+          "defaultValue": "https://teams.microsoft.com/l/entity/644faca5-9752-4903-8a1f-d9ddbf73ff51/644faca5-9752-4903-8a1f-d9ddbf73ff51?context=%7B%22subEntityId%22%3A%22",
+          "type": "String",
+          "metadata": {
+            "schemaName": "tms_AppsURL"
+          }
+        },
+        "User List (tms_UserList)": {
+          "defaultValue": "b0e71eeb-dcac-48d0-81f5-e6fe08e70a16",
+          "type": "String",
+          "metadata": {
+            "schemaName": "tms_UserList"
+          }
+        }
+      },
+      "triggers": {
+        "manual": {
+          "metadata": {
+            "operationMetadataId": "49d761b2-2a8f-46f0-9eae-110f3b53ca99"
+          },
+          "type": "Request",
+          "kind": "PowerAppV2",
+          "inputs": {
+            "schema": {
+              "type": "object",
+              "properties": {
+                "number": {
+                  "description": "Please enter a number",
+                  "title": "ID_Checklist",
+                  "type": "number",
+                  "x-ms-content-hint": "NUMBER",
+                  "x-ms-dynamically-added": true
+                },
+                "number_1": {
+                  "description": "Please enter a number",
+                  "title": "ID_Task",
+                  "type": "number",
+                  "x-ms-content-hint": "NUMBER",
+                  "x-ms-dynamically-added": true
+                },
+                "text": {
+                  "description": "Please enter your input",
+                  "title": "Task_Name",
+                  "type": "string",
+                  "x-ms-content-hint": "TEXT",
+                  "x-ms-dynamically-added": true
+                },
+                "email": {
+                  "description": "Enter an email address.",
+                  "format": "email",
+                  "title": "Task_Assigner",
+                  "type": "string",
+                  "x-ms-content-hint": "EMAIL",
+                  "x-ms-dynamically-added": true
+                },
+                "text_1": {
+                  "description": "Please enter your input",
+                  "title": "Checklist_Name",
+                  "type": "string",
+                  "x-ms-content-hint": "TEXT",
+                  "x-ms-dynamically-added": true
+                },
+                "email_1": {
+                  "description": "Enter an email address.",
+                  "format": "email",
+                  "title": "Proposed_By",
+                  "type": "string",
+                  "x-ms-content-hint": "EMAIL",
+                  "x-ms-dynamically-added": true
+                }
+              },
+              "required": [
+                "number",
+                "number_1",
+                "text",
+                "email",
+                "text_1",
+                "email_1"
+              ]
+            }
+          }
+        }
+      },
+      "actions": {
+        "Respond_to_a_Power_App_or_flow": {
+          "runAfter": {
+            "Delete_item": [
+              "Succeeded"
+            ]
+          },
+          "type": "Response",
+          "kind": "PowerApp",
+          "inputs": {
+            "schema": {
+              "type": "object",
+              "properties": {
+                "success": {
+                  "title": "Success",
+                  "type": "boolean",
+                  "x-ms-content-hint": "BOOLEAN",
+                  "x-ms-dynamically-added": true
+                },
+                "id_checklist": {
+                  "title": "ID_Checklist",
+                  "type": "number",
+                  "x-ms-content-hint": "NUMBER",
+                  "x-ms-dynamically-added": true
+                }
+              },
+              "additionalProperties": {}
+            },
+            "statusCode": 200,
+            "body": {
+              "success": true,
+              "id_checklist": "@triggerBody()?['number']"
+            }
+          }
+        },
+        "Delete_item": {
+          "runAfter": {},
+          "type": "OpenApiConnection",
+          "inputs": {
+            "parameters": {
+              "dataset": "@parameters('Task Management Site (tms_TaskManagementSite)')",
+              "table": "@parameters('Checklist List (tms_ChecklistList)')",
+              "id": "@triggerBody()?['number']"
+            },
+            "host": {
+              "apiId": "/providers/Microsoft.PowerApps/apis/shared_sharepointonline",
+              "operationId": "DeleteItem",
+              "connectionName": "shared_sharepointonline-1"
+            }
+          }
+        },
+        "Get_items_-_Assign_To_Person_List": {
+          "runAfter": {},
+          "type": "OpenApiConnection",
+          "inputs": {
+            "parameters": {
+              "dataset": "@parameters('Task Management Site (tms_TaskManagementSite)')",
+              "table": "@parameters('Task Assigned To Person List (tms_TaskAssignedToPersonList)')",
+              "$filter": "ID_Task/Id eq @{triggerBody()?['number_1']}"
+            },
+            "host": {
+              "apiId": "/providers/Microsoft.PowerApps/apis/shared_sharepointonline",
+              "operationId": "GetItems",
+              "connectionName": "shared_sharepointonline-1"
+            }
+          }
+        },
+        "Get_items_-_Assign_To_Division_List": {
+          "runAfter": {},
+          "type": "OpenApiConnection",
+          "inputs": {
+            "parameters": {
+              "dataset": "@parameters('Task Management Site (tms_TaskManagementSite)')",
+              "table": "@parameters('Task Assigned To Division List (tms_TaskAssignedToDivisionList)')",
+              "$filter": "ID_Task/Id eq @{triggerBody()?['number_1']}"
+            },
+            "host": {
+              "apiId": "/providers/Microsoft.PowerApps/apis/shared_sharepointonline",
+              "operationId": "GetItems",
+              "connectionName": "shared_sharepointonline-1"
+            }
+          }
+        },
+        "Select_2": {
+          "runAfter": {
+            "Get_items_-_Assign_To_Person_List": [
+              "Succeeded"
+            ]
+          },
+          "type": "Select",
+          "inputs": {
+            "from": "@outputs('Get_items_-_Assign_To_Person_List')?['body/value']",
+            "select": {
+              "email": "@item()?['ID_User/Value']"
+            }
+          }
+        },
+        "Condition_-_No_Division_Assigned": {
+          "actions": {},
+          "runAfter": {
+            "Get_items_-_Assign_To_Division_List": [
+              "Succeeded"
+            ]
+          },
+          "else": {
+            "actions": {
+              "Select_-_Division": {
+                "type": "Select",
+                "inputs": {
+                  "from": "@outputs('Get_items_-_Assign_To_Division_List')?['body/value']",
+                  "select": {
+                    "ID_Division/Id eq": "@item()?['ID_Division/Id']"
+                  }
+                }
+              },
+              "Join_-_or": {
+                "runAfter": {
+                  "Select_-_Division": [
+                    "Succeeded"
+                  ]
+                },
+                "type": "Join",
+                "inputs": {
+                  "from": "@body('Select_-_Division')",
+                  "joinWith": " or "
+                }
+              },
+              "Get_items_-_All_Users_in_All_Divisions": {
+                "runAfter": {
+                  "Join_-_or": [
+                    "Succeeded"
+                  ]
+                },
+                "type": "OpenApiConnection",
+                "inputs": {
+                  "parameters": {
+                    "dataset": "@parameters('Task Management Site (tms_TaskManagementSite)')",
+                    "table": "@parameters('User List (tms_UserList)')",
+                    "$filter": "@replace(\r\n    replace(\r\n        replace(\r\n            replace(body('Join_-_or'), '{', ''),\r\n        '}', ''),\r\n    '\"', ''),\r\n':', ' '\r\n)"
+                  },
+                  "host": {
+                    "apiId": "/providers/Microsoft.PowerApps/apis/shared_sharepointonline",
+                    "operationId": "GetItems",
+                    "connectionName": "shared_sharepointonline-1"
+                  }
+                }
+              }
+            }
+          },
+          "expression": {
+            "and": [
+              {
+                "equals": [
+                  "@empty(outputs('Get_items_-_Assign_To_Division_List')?['body/value'])",
+                  true
+                ]
+              }
+            ]
+          },
+          "type": "If"
+        },
+        "Select_1": {
+          "runAfter": {
+            "Condition_-_No_Division_Assigned": [
+              "Succeeded"
+            ]
+          },
+          "type": "Select",
+          "inputs": {
+            "from": "@\r\n\r\ncoalesce(\r\noutputs('Get_items_-_All_Users_in_All_Divisions')?['body/value'],\r\n   json('[]')\r\n)",
+            "select": {
+              "email": "@item()?['email']"
+            }
+          }
+        },
+        "Apply_to_each_-_Related_Users": {
+          "foreach": "@union(body('Select_1'), body('Select_2'))",
+          "actions": {
+            "Post_message_in_a_chat_or_channel": {
+              "type": "OpenApiConnection",
+              "inputs": {
+                "parameters": {
+                  "poster": "Flow bot",
+                  "location": "Chat with Flow bot",
+                  "body/recipient": "@item()?['email']",
+                  "body/messageBody": "<p class=\"editor-paragraph\">\nHi <b>@{item()?['email']}</b>,<br><br>\n\nA proposed checklist has been declined by the Task Assigner @{concat(\n  'TID',\n  substring(\n    concat('00000', string(triggerBody()?['number_1'])),\n    sub(length(concat('00000', string(triggerBody()?['number_1']))), 5),\n    5\n  )\n)} @{triggerBody()?['text']}:<br>\n\n<table border=\"0\">\n<tbody>\n<tr>\n<td>Checklist</td>\n<td> : @{triggerBody()?['text_1']}</td>\n</tr>\n<tr>\n<td>Proposed By</td>\n<td> : @{triggerBody()?['email_1']}</td>\n</tr>\n<tr>\n<td>Rejected By</td>\n<td> : @{triggerBody()?['email']}</td>\n</tr>\n</tbody>\n</table>\n\n<br>\nThe proposed checklist has been declined and removed from the task.<br>\nYou can still propose a new checklist for this task using the link below:<br>\n\n<a href=\"@{parameters('Apps URL (tms_AppsURL)')}@{triggerBody()?['number_1']}%22%7D\" class=\"editor-link\">\nOpen Power Apps\n</a>\n\n<br><br>\nThank you.</p>",
+                  "body/isAlert": true
+                },
+                "host": {
+                  "apiId": "/providers/Microsoft.PowerApps/apis/shared_teams",
+                  "operationId": "PostMessageToConversation",
+                  "connectionName": "shared_teams"
+                }
+              }
+            },
+            "Send_an_email_(V2)": {
+              "type": "OpenApiConnection",
+              "inputs": {
+                "parameters": {
+                  "emailMessage/To": "@item()?['email']",
+                  "emailMessage/Subject": "A Porposed Checklist Has Been Declined @{concat(\r\n  'TID',\r\n  substring(\r\n    concat('00000', string(triggerBody()?['number_1'])),\r\n    sub(length(concat('00000', string(triggerBody()?['number_1']))), 5),\r\n    5\r\n  )\r\n)} @{triggerBody()?['text']}",
+                  "emailMessage/Body": "<p class=\"editor-paragraph\">\nHi <b>@{item()?['email']}</b>,<br><br>\n\nA proposed checklist has been declined by the Task Assigner @{concat(\n  'TID',\n  substring(\n    concat('00000', string(triggerBody()?['number_1'])),\n    sub(length(concat('00000', string(triggerBody()?['number_1']))), 5),\n    5\n  )\n)} @{triggerBody()?['text']}:<br>\n\n<table border=\"0\">\n<tbody>\n<tr>\n<td>Checklist</td>\n<td> : @{triggerBody()?['text_1']}</td>\n</tr>\n<tr>\n<td>Proposed By</td>\n<td> : @{triggerBody()?['email_1']}</td>\n</tr>\n<tr>\n<td>Rejected By</td>\n<td> : @{triggerBody()?['email']}</td>\n</tr>\n</tbody>\n</table>\n\n<br>\nThe proposed checklist has been declined and removed from the task.<br>\nYou can still propose a new checklist for this task using the link below:<br>\n\n<a href=\"@{parameters('Apps URL (tms_AppsURL)')}@{triggerBody()?['number_1']}%22%7D\" class=\"editor-link\">\nOpen Power Apps\n</a>\n\n<br><br>\nThank you.</p>",
+                  "emailMessage/Importance": "High"
+                },
+                "host": {
+                  "apiId": "/providers/Microsoft.PowerApps/apis/shared_office365",
+                  "operationId": "SendEmailV2",
+                  "connectionName": "shared_office365"
+                }
+              }
+            }
+          },
+          "runAfter": {
+            "Select_1": [
+              "Succeeded"
+            ],
+            "Delete_item": [
+              "Succeeded"
+            ],
+            "Select_2": [
+              "Succeeded"
+            ]
+          },
+          "type": "Foreach"
+        }
+      }
+    },
+    "templateName": null
+  },
+  "schemaVersion": "1.0.0.0"
+}

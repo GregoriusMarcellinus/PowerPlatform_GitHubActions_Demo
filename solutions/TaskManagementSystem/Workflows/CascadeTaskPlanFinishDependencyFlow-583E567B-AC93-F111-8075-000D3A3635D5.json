@@ -1,0 +1,278 @@
+{
+  "properties": {
+    "connectionReferences": {
+      "shared_sharepointonline": {
+        "runtimeSource": "embedded",
+        "connection": {
+          "connectionReferenceLogicalName": "tms_SharePointAdmin"
+        },
+        "api": {
+          "name": "shared_sharepointonline"
+        }
+      }
+    },
+    "definition": {
+      "$schema": "https://schema.management.azure.com/providers/Microsoft.Logic/schemas/2016-06-01/workflowdefinition.json#",
+      "contentVersion": "1.0.0.0",
+      "parameters": {
+        "$authentication": {
+          "defaultValue": {},
+          "type": "SecureObject"
+        },
+        "$connections": {
+          "defaultValue": {},
+          "type": "Object"
+        },
+        "Task Management Site (tms_TaskManagementSite)": {
+          "defaultValue": "https://m365b467805.sharepoint.com/sites/TaskManagement",
+          "type": "String",
+          "metadata": {
+            "schemaName": "tms_TaskManagementSite"
+          }
+        },
+        "Task List (tms_TaskList)": {
+          "defaultValue": "2b09fc89-2c29-499b-bca9-cd2d764eaf3a",
+          "type": "String",
+          "metadata": {
+            "schemaName": "tms_TaskList"
+          }
+        }
+      },
+      "triggers": {
+        "manual": {
+          "metadata": {
+            "operationMetadataId": "7e7f91e2-77c9-4a60-8a86-61cde6dd9a65"
+          },
+          "type": "Request",
+          "kind": "PowerAppV2",
+          "inputs": {
+            "schema": {
+              "type": "object",
+              "properties": {
+                "number": {
+                  "description": "Please enter a number",
+                  "title": "ID_Task",
+                  "type": "number",
+                  "x-ms-content-hint": "NUMBER",
+                  "x-ms-dynamically-added": true
+                }
+              },
+              "required": [
+                "number"
+              ]
+            }
+          }
+        }
+      },
+      "actions": {
+        "Initialize_variable_-_varCurrentID": {
+          "runAfter": {
+            "Get_item_-_Current_Task": [
+              "Succeeded"
+            ]
+          },
+          "type": "InitializeVariable",
+          "inputs": {
+            "variables": [
+              {
+                "name": "varCurrentID",
+                "type": "integer",
+                "value": "@outputs('Get_item_-_Current_Task')?['body/ID']"
+              }
+            ]
+          }
+        },
+        "Initialize_variable_-_varPlanFinish": {
+          "runAfter": {
+            "Get_item_-_Current_Task": [
+              "Succeeded"
+            ]
+          },
+          "type": "InitializeVariable",
+          "inputs": {
+            "variables": [
+              {
+                "name": "varPlanFinish",
+                "type": "string",
+                "value": "@outputs('Get_item_-_Current_Task')?['body/plan_finish_date']"
+              }
+            ]
+          }
+        },
+        "Initialize_variable_-_varCurrentLevel": {
+          "runAfter": {
+            "Get_item_-_Current_Task": [
+              "Succeeded"
+            ]
+          },
+          "type": "InitializeVariable",
+          "inputs": {
+            "variables": [
+              {
+                "name": "varCurrentLevel",
+                "type": "integer",
+                "value": "@int(outputs('Get_item_-_Current_Task')?['body/task_level'])"
+              }
+            ]
+          }
+        },
+        "Initialize_variable_-_varCurrentParentID": {
+          "runAfter": {
+            "Get_item_-_Current_Task": [
+              "Succeeded"
+            ]
+          },
+          "type": "InitializeVariable",
+          "inputs": {
+            "variables": [
+              {
+                "name": "varCurrentParentID",
+                "type": "integer",
+                "value": "@outputs('Get_item_-_Current_Task')?['body/ID_Parent_Lookup/Id']"
+              }
+            ]
+          }
+        },
+        "Do_until": {
+          "actions": {
+            "Get_item_-_Task_Parent": {
+              "type": "OpenApiConnection",
+              "inputs": {
+                "parameters": {
+                  "dataset": "@parameters('Task Management Site (tms_TaskManagementSite)')",
+                  "table": "@parameters('Task List (tms_TaskList)')",
+                  "id": "@variables('varCurrentParentID')"
+                },
+                "host": {
+                  "apiId": "/providers/Microsoft.PowerApps/apis/shared_sharepointonline",
+                  "operationId": "GetItem",
+                  "connectionName": "shared_sharepointonline"
+                }
+              }
+            },
+            "Set_variable_-_varCurrentID": {
+              "runAfter": {
+                "Get_item_-_Task_Parent": [
+                  "Succeeded"
+                ]
+              },
+              "type": "SetVariable",
+              "inputs": {
+                "name": "varCurrentID",
+                "value": "@outputs('Get_item_-_Task_Parent')?['body/ID']"
+              }
+            },
+            "Set_variable_-_varCurrentLevel": {
+              "runAfter": {
+                "Get_item_-_Task_Parent": [
+                  "Succeeded"
+                ]
+              },
+              "type": "SetVariable",
+              "inputs": {
+                "name": "varCurrentLevel",
+                "value": "@int(outputs('Get_item_-_Task_Parent')?['body/task_level'])"
+              }
+            },
+            "Set_variable_-_varCurrentParentID": {
+              "runAfter": {
+                "Get_item_-_Task_Parent": [
+                  "Succeeded"
+                ]
+              },
+              "type": "SetVariable",
+              "inputs": {
+                "name": "varCurrentParentID",
+                "value": "@int(\r\n    coalesce(\r\n        outputs('Get_item_-_Task_Parent')?['body/ID_Parent_Lookup/Id'],\r\n        0\r\n    )\r\n)"
+              }
+            },
+            "Condition": {
+              "actions": {
+                "Update_item_-_Current_Task": {
+                  "type": "OpenApiConnection",
+                  "inputs": {
+                    "parameters": {
+                      "dataset": "@parameters('Task Management Site (tms_TaskManagementSite)')",
+                      "table": "@parameters('Task List (tms_TaskList)')",
+                      "id": "@variables('varCurrentID')",
+                      "item/plan_finish_date": "@variables('varPlanFinish')",
+                      "item/task_duration": "@div(\r\n    sub(\r\n        ticks(variables('varPlanFinish')),\r\n        ticks(outputs('Get_item_-_Task_Parent')?['body/plan_start_date'])\r\n    ),\r\n    864000000000\r\n)"
+                    },
+                    "host": {
+                      "apiId": "/providers/Microsoft.PowerApps/apis/shared_sharepointonline",
+                      "operationId": "PatchItem",
+                      "connectionName": "shared_sharepointonline"
+                    }
+                  }
+                }
+              },
+              "runAfter": {
+                "Set_variable_-_varCurrentLevel": [
+                  "Succeeded"
+                ],
+                "Set_variable_-_varCurrentID": [
+                  "Succeeded"
+                ],
+                "Set_variable_-_varCurrentParentID": [
+                  "Succeeded"
+                ]
+              },
+              "else": {
+                "actions": {}
+              },
+              "expression": {
+                "and": [
+                  {
+                    "greater": [
+                      "@variables('varPlanFinish')",
+                      "@outputs('Get_item_-_Task_Parent')?['body/plan_finish_date']"
+                    ]
+                  }
+                ]
+              },
+              "type": "If"
+            }
+          },
+          "runAfter": {
+            "Initialize_variable_-_varCurrentID": [
+              "Succeeded"
+            ],
+            "Initialize_variable_-_varPlanFinish": [
+              "Succeeded"
+            ],
+            "Initialize_variable_-_varCurrentLevel": [
+              "Succeeded"
+            ],
+            "Initialize_variable_-_varCurrentParentID": [
+              "Succeeded"
+            ]
+          },
+          "expression": "@equals(variables('varCurrentLevel'),1)",
+          "limit": {
+            "count": 60,
+            "timeout": "PT1H"
+          },
+          "type": "Until"
+        },
+        "Get_item_-_Current_Task": {
+          "runAfter": {},
+          "type": "OpenApiConnection",
+          "inputs": {
+            "parameters": {
+              "dataset": "@parameters('Task Management Site (tms_TaskManagementSite)')",
+              "table": "@parameters('Task List (tms_TaskList)')",
+              "id": "@triggerBody()?['number']"
+            },
+            "host": {
+              "apiId": "/providers/Microsoft.PowerApps/apis/shared_sharepointonline",
+              "operationId": "GetItem",
+              "connectionName": "shared_sharepointonline"
+            }
+          }
+        }
+      }
+    },
+    "templateName": null
+  },
+  "schemaVersion": "1.0.0.0"
+}

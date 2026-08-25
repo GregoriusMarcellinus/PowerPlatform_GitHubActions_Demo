@@ -1,0 +1,124 @@
+{
+  "properties": {
+    "connectionReferences": {
+      "shared_sharepointonline": {
+        "runtimeSource": "embedded",
+        "connection": {
+          "connectionReferenceLogicalName": "tms_SharePointAdmin"
+        },
+        "api": {
+          "name": "shared_sharepointonline"
+        }
+      }
+    },
+    "definition": {
+      "$schema": "https://schema.management.azure.com/providers/Microsoft.Logic/schemas/2016-06-01/workflowdefinition.json#",
+      "contentVersion": "1.0.0.0",
+      "parameters": {
+        "$authentication": {
+          "defaultValue": {},
+          "type": "SecureObject"
+        },
+        "$connections": {
+          "defaultValue": {},
+          "type": "Object"
+        },
+        "Executive Task Site (tms_ExecutiveTaskSite)": {
+          "defaultValue": "https://m365b467805.sharepoint.com/sites/ExecutiveTask",
+          "type": "String",
+          "metadata": {
+            "schemaName": "tms_ExecutiveTaskSite"
+          }
+        },
+        "Task Management Site (tms_TaskManagementSite)": {
+          "defaultValue": "https://m365b467805.sharepoint.com/sites/TaskManagement",
+          "type": "String",
+          "metadata": {
+            "schemaName": "tms_TaskManagementSite"
+          }
+        },
+        "Division List (tms_DivisionList)": {
+          "defaultValue": "d444aa23-a031-4dc7-8453-1f7a481f25f1",
+          "type": "String",
+          "metadata": {
+            "schemaName": "tms_DivisionList"
+          }
+        },
+        "Executive Final Y2026 Document Library (tms_ExecutiveFinalY2026DocumentLibrary)": {
+          "defaultValue": "99f0f85d-c1aa-4127-81d9-283cf663d24d",
+          "type": "String",
+          "metadata": {
+            "schemaName": "tms_ExecutiveFinalY2026DocumentLibrary"
+          }
+        },
+        "Final Y2026 Document Library (tms_FinalY2026)": {
+          "defaultValue": "17a11490-bd1d-4881-b950-79eeeee2a4bd",
+          "type": "String",
+          "metadata": {
+            "schemaName": "tms_FinalY2026"
+          }
+        }
+      },
+      "triggers": {
+        "When_an_item_is_created_or_modified": {
+          "recurrence": {
+            "interval": 5,
+            "frequency": "Minute"
+          },
+          "splitOn": "@triggerOutputs()?['body/value']",
+          "metadata": {
+            "operationMetadataId": "77b7508f-036d-4537-8151-00d28eb6e47f"
+          },
+          "type": "OpenApiConnection",
+          "inputs": {
+            "parameters": {
+              "dataset": "@parameters('Task Management Site (tms_TaskManagementSite)')",
+              "table": "@parameters('Division List (tms_DivisionList)')"
+            },
+            "host": {
+              "apiId": "/providers/Microsoft.PowerApps/apis/shared_sharepointonline",
+              "operationId": "GetOnUpdatedItems",
+              "connectionName": "shared_sharepointonline"
+            }
+          }
+        }
+      },
+      "actions": {
+        "Create_new_folder_-_Task_Folder_-_Executive_Task_Site": {
+          "runAfter": {},
+          "type": "OpenApiConnection",
+          "inputs": {
+            "parameters": {
+              "dataset": "@parameters('Executive Task Site (tms_ExecutiveTaskSite)')",
+              "table": "@parameters('Executive Final Y2026 Document Library (tms_ExecutiveFinalY2026DocumentLibrary)')",
+              "parameters/path": "/@{triggerBody()?['division_name']}"
+            },
+            "host": {
+              "apiId": "/providers/Microsoft.PowerApps/apis/shared_sharepointonline",
+              "operationId": "CreateNewFolder",
+              "connectionName": "shared_sharepointonline"
+            }
+          }
+        },
+        "Create_new_folder_-_Task_Folder_-_Task_Management_Site": {
+          "runAfter": {},
+          "type": "OpenApiConnection",
+          "inputs": {
+            "parameters": {
+              "dataset": "@parameters('Task Management Site (tms_TaskManagementSite)')",
+              "table": "@parameters('Final Y2026 Document Library (tms_FinalY2026)')",
+              "parameters/path": "/@{triggerBody()?['division_name']}"
+            },
+            "host": {
+              "apiId": "/providers/Microsoft.PowerApps/apis/shared_sharepointonline",
+              "operationId": "CreateNewFolder",
+              "connectionName": "shared_sharepointonline"
+            }
+          }
+        }
+      }
+    },
+    "templateName": null
+  },
+  "schemaVersion": "1.0.0.0"
+}

@@ -1,0 +1,209 @@
+{
+  "properties": {
+    "connectionReferences": {
+      "shared_sharepointonline-1": {
+        "runtimeSource": "embedded",
+        "connection": {
+          "connectionReferenceLogicalName": "tms_SharePointAdmin"
+        },
+        "api": {
+          "name": "shared_sharepointonline"
+        }
+      },
+      "shared_teams": {
+        "runtimeSource": "embedded",
+        "connection": {
+          "connectionReferenceLogicalName": "tms_sharedteams_7e1c0"
+        },
+        "api": {
+          "name": "shared_teams"
+        }
+      },
+      "shared_office365": {
+        "runtimeSource": "embedded",
+        "connection": {
+          "connectionReferenceLogicalName": "tms_sharedoffice365_d642d"
+        },
+        "api": {
+          "name": "shared_office365"
+        }
+      }
+    },
+    "definition": {
+      "$schema": "https://schema.management.azure.com/providers/Microsoft.Logic/schemas/2016-06-01/workflowdefinition.json#",
+      "contentVersion": "1.0.0.0",
+      "parameters": {
+        "$authentication": {
+          "defaultValue": {},
+          "type": "SecureObject"
+        },
+        "$connections": {
+          "defaultValue": {},
+          "type": "Object"
+        },
+        "Task Management Site (tms_TaskManagementSite)": {
+          "defaultValue": "https://m365b467805.sharepoint.com/sites/TaskManagement",
+          "type": "String",
+          "metadata": {
+            "schemaName": "tms_TaskManagementSite"
+          }
+        },
+        "Task List (tms_TaskList)": {
+          "defaultValue": "2b09fc89-2c29-499b-bca9-cd2d764eaf3a",
+          "type": "String",
+          "metadata": {
+            "schemaName": "tms_TaskList"
+          }
+        },
+        "Task Assigned To Division List (tms_TaskAssignedToDivisionList)": {
+          "defaultValue": "e59fc654-0a6c-469d-9edb-10b069db7077",
+          "type": "String",
+          "metadata": {
+            "schemaName": "tms_TaskAssignedToDivisionList"
+          }
+        },
+        "User List (tms_UserList)": {
+          "defaultValue": "b0e71eeb-dcac-48d0-81f5-e6fe08e70a16",
+          "type": "String",
+          "metadata": {
+            "schemaName": "tms_UserList"
+          }
+        },
+        "Apps URL (tms_AppsURL)": {
+          "defaultValue": "https://teams.microsoft.com/l/entity/644faca5-9752-4903-8a1f-d9ddbf73ff51/644faca5-9752-4903-8a1f-d9ddbf73ff51?context=%7B%22subEntityId%22%3A%22",
+          "type": "String",
+          "metadata": {
+            "schemaName": "tms_AppsURL"
+          }
+        }
+      },
+      "triggers": {
+        "When_an_item_is_created": {
+          "recurrence": {
+            "interval": 1,
+            "frequency": "Minute"
+          },
+          "splitOn": "@triggerOutputs()?['body/value']",
+          "type": "OpenApiConnection",
+          "inputs": {
+            "parameters": {
+              "dataset": "@parameters('Task Management Site (tms_TaskManagementSite)')",
+              "table": "@parameters('Task Assigned To Division List (tms_TaskAssignedToDivisionList)')"
+            },
+            "host": {
+              "apiId": "/providers/Microsoft.PowerApps/apis/shared_sharepointonline",
+              "operationId": "GetOnNewItems",
+              "connectionName": "shared_sharepointonline-1"
+            }
+          },
+          "conditions": [
+            {
+              "expression": "@and(     not(empty(triggerOutputs()?['body/ID_Task/Value'])),     not(equals(triggerOutputs()?['body/ID_Task/Value'], '')) )"
+            }
+          ]
+        }
+      },
+      "actions": {
+        "Get_item_-_Task_List": {
+          "runAfter": {},
+          "type": "OpenApiConnection",
+          "inputs": {
+            "parameters": {
+              "dataset": "@parameters('Task Management Site (tms_TaskManagementSite)')",
+              "table": "@parameters('Task List (tms_TaskList)')",
+              "id": "@triggerBody()?['ID_Task/Id']"
+            },
+            "host": {
+              "apiId": "/providers/Microsoft.PowerApps/apis/shared_sharepointonline",
+              "operationId": "GetItem",
+              "connectionName": "shared_sharepointonline-1"
+            }
+          }
+        },
+        "Get_items_-_User_List": {
+          "runAfter": {},
+          "type": "OpenApiConnection",
+          "inputs": {
+            "parameters": {
+              "dataset": "@parameters('Task Management Site (tms_TaskManagementSite)')",
+              "table": "@parameters('User List (tms_UserList)')",
+              "$filter": "ID_Division/ID eq @{triggerBody()?['ID_Division/Id']}"
+            },
+            "host": {
+              "apiId": "/providers/Microsoft.PowerApps/apis/shared_sharepointonline",
+              "operationId": "GetItems",
+              "connectionName": "shared_sharepointonline-1"
+            }
+          }
+        },
+        "For_each": {
+          "foreach": "@outputs('Get_items_-_User_List')?['body/value']",
+          "actions": {
+            "Post_message_in_a_chat_or_channel_-_To_Relevant_User": {
+              "type": "OpenApiConnection",
+              "inputs": {
+                "parameters": {
+                  "poster": "Flow bot",
+                  "location": "Chat with Flow bot",
+                  "body/recipient": "@items('For_each')?['email']",
+                  "body/messageBody": "<p class=\"editor-paragraph\">Hi <b>@{items('For_each')?['email']}</b>,<br><br>A new task has been assigned to your division: <br><table border=\"0\">\n<tbody>\n<tr><td>Task ID</td><td> : @{concat(\r\n  'TID',\r\n  substring(\r\n    concat('00000', string(outputs('Get_item_-_Task_List')?['body/ID'])),\r\n    sub(length(concat('00000', string(outputs('Get_item_-_Task_List')?['body/ID']))), 5),\r\n    5\r\n  )\r\n)}</td></tr>\n<tr><td>Task Name</td><td> : @{outputs('Get_item_-_Task_List')?['body/task_name']}</td></tr>\n<tr><td>Task Priority</td><td> : @{outputs('Get_item_-_Task_List')?['body/ID_Priority/Value']}</td></tr>\n<tr><td>Task Description</td><td> : @{outputs('Get_item_-_Task_List')?['body/task_description']}</td></tr>\n<tr><td>Plan Start Date</td><td> : @{formatDateTime(\r\n  outputs('Get_item_-_Task_List')?['body/plan_start_date'],\r\n  'dddd, dd MMM yyyy'\r\n)}</td></tr>\n<tr><td>Plan Finish Date</td><td> : @{formatDateTime(\r\n  outputs('Get_item_-_Task_List')?['body/plan_finish_date'],\r\n  'dddd, dd MMM yyyy'\r\n)}</td></tr>\n<tr><td>Assigned By</td><td> : @{outputs('Get_item_-_Task_List')?['body/ID_User_Task_Created_By/Value']}</td></tr>\n</tbody>\n</table><br>Please coordinate within your division to take ownership of this task and update the progress accordingly through the link below:<br><a href=\"@{parameters('Apps URL (tms_AppsURL)')}@{outputs('Get_item_-_Task_List')?['body/ID']}%22%7D\" class=\"editor-link\">Open Power Apps</a><br><br>Thank you.</p>",
+                  "body/isAlert": true
+                },
+                "host": {
+                  "apiId": "/providers/Microsoft.PowerApps/apis/shared_teams",
+                  "operationId": "PostMessageToConversation",
+                  "connectionName": "shared_teams"
+                }
+              }
+            }
+          },
+          "runAfter": {
+            "Get_item_-_Task_List": [
+              "Succeeded"
+            ],
+            "Get_items_-_User_List": [
+              "Succeeded"
+            ]
+          },
+          "type": "Foreach"
+        },
+        "For_each_1": {
+          "foreach": "@outputs('Get_items_-_User_List')?['body/value']",
+          "actions": {
+            "Send_an_email_(V2)_-_To_Relevant_User": {
+              "metadata": {
+                "operationMetadataId": "1fbe8886-2998-41c7-8e89-f36e33de0943"
+              },
+              "type": "OpenApiConnection",
+              "inputs": {
+                "parameters": {
+                  "emailMessage/To": "@items('For_each_1')?['email']",
+                  "emailMessage/Subject": "New Task Assigned to Your Division: @{concat(\r\n  'TID',\r\n  substring(\r\n    concat('00000', string(outputs('Get_item_-_Task_List')?['body/ID'])),\r\n    sub(length(concat('00000', string(outputs('Get_item_-_Task_List')?['body/ID']))), 5),\r\n    5\r\n  )\r\n)} @{outputs('Get_item_-_Task_List')?['body/task_name']}",
+                  "emailMessage/Body": "<p class=\"editor-paragraph\">Hi <b>@{items('For_each_1')?['email']}</b>,<br><br>A new task has been assigned to your division: <br><table border=\"0\">\n<tbody>\n<tr><td>Task ID</td><td> : @{concat(\r\n  'TID',\r\n  substring(\r\n    concat('00000', string(outputs('Get_item_-_Task_List')?['body/ID'])),\r\n    sub(length(concat('00000', string(outputs('Get_item_-_Task_List')?['body/ID']))), 5),\r\n    5\r\n  )\r\n)}</td></tr>\n<tr><td>Task Name</td><td> : @{outputs('Get_item_-_Task_List')?['body/task_name']}</td></tr>\n<tr><td>Task Priority</td><td> : @{outputs('Get_item_-_Task_List')?['body/ID_Priority/Value']}</td></tr>\n<tr><td>Task Description</td><td> : @{outputs('Get_item_-_Task_List')?['body/task_description']}</td></tr>\n<tr><td>Plan Start Date</td><td> : @{formatDateTime(\n  outputs('Get_item_-_Task_List')?['body/plan_start_date'],\n  'dddd, dd MMM yyyy'\n)}</td></tr>\n<tr><td>Plan Finish Date</td><td> : @{formatDateTime(\n  outputs('Get_item_-_Task_List')?['body/plan_finish_date'],\n  'dddd, dd MMM yyyy'\n)}</td></tr>\n<tr><td>Assigned By</td><td> : @{outputs('Get_item_-_Task_List')?['body/ID_User_Task_Created_By/Value']}</td></tr>\n</tbody>\n</table><br>Please coordinate within your division to take ownership of this task and update the progress accordingly through the link below:<br><a href=\"@{parameters('Apps URL (tms_AppsURL)')}@{outputs('Get_item_-_Task_List')?['body/ID']}%22%7D\" class=\"editor-link\">Open Power Apps</a><br><br>Thank you.</p>",
+                  "emailMessage/Sensitivity": "defa4170-0d19-0005-0007-bc88714345d2",
+                  "emailMessage/Importance": "High"
+                },
+                "host": {
+                  "apiId": "/providers/Microsoft.PowerApps/apis/shared_office365",
+                  "operationId": "SendEmailV2",
+                  "connectionName": "shared_office365"
+                }
+              }
+            }
+          },
+          "runAfter": {
+            "Get_item_-_Task_List": [
+              "Succeeded"
+            ],
+            "Get_items_-_User_List": [
+              "Succeeded"
+            ]
+          },
+          "type": "Foreach"
+        }
+      }
+    },
+    "templateName": null
+  },
+  "schemaVersion": "1.0.0.0"
+}

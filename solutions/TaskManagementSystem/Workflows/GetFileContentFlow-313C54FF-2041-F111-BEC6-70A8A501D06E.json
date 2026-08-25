@@ -1,0 +1,956 @@
+{
+  "properties": {
+    "connectionReferences": {
+      "shared_sharepointonline-1": {
+        "runtimeSource": "embedded",
+        "connection": {
+          "connectionReferenceLogicalName": "tms_SharePointAdmin"
+        },
+        "api": {
+          "name": "shared_sharepointonline"
+        }
+      }
+    },
+    "definition": {
+      "$schema": "https://schema.management.azure.com/providers/Microsoft.Logic/schemas/2016-06-01/workflowdefinition.json#",
+      "contentVersion": "1.0.0.0",
+      "parameters": {
+        "$authentication": {
+          "defaultValue": {},
+          "type": "SecureObject"
+        },
+        "$connections": {
+          "defaultValue": {},
+          "type": "Object"
+        },
+        "Task Management Site (tms_TaskManagementSite)": {
+          "defaultValue": "https://m365b467805.sharepoint.com/sites/TaskManagement",
+          "type": "String",
+          "metadata": {
+            "schemaName": "tms_TaskManagementSite"
+          }
+        },
+        "Working Y2026 Document Library (tms_WorkingY2026DocumentLibrary)": {
+          "defaultValue": "7c1dfcae-9cee-4558-a4a1-47615324c546",
+          "type": "String",
+          "metadata": {
+            "schemaName": "tms_WorkingY2026DocumentLibrary"
+          }
+        },
+        "Final Y2026 Document Library (tms_FinalY2026)": {
+          "defaultValue": "17a11490-bd1d-4881-b950-79eeeee2a4bd",
+          "type": "String",
+          "metadata": {
+            "schemaName": "tms_FinalY2026"
+          }
+        },
+        "Executive Task Site (tms_ExecutiveTaskSite)": {
+          "defaultValue": "https://m365b467805.sharepoint.com/sites/ExecutiveTask",
+          "type": "String",
+          "metadata": {
+            "schemaName": "tms_ExecutiveTaskSite"
+          }
+        },
+        "Executive Final Y2026 Document Library (tms_ExecutiveFinalY2026DocumentLibrary)": {
+          "defaultValue": "99f0f85d-c1aa-4127-81d9-283cf663d24d",
+          "type": "String",
+          "metadata": {
+            "schemaName": "tms_ExecutiveFinalY2026DocumentLibrary"
+          }
+        },
+        "Executive Working Y2026 Document Library (tms_ExecutiveWorkingY2026DocumentLibrary)": {
+          "defaultValue": "f69588e1-3e9f-42eb-ae92-a653c6a746ce",
+          "type": "String",
+          "metadata": {
+            "schemaName": "tms_ExecutiveWorkingY2026DocumentLibrary"
+          }
+        }
+      },
+      "triggers": {
+        "manual": {
+          "metadata": {
+            "operationMetadataId": "ae14d66e-468b-45d1-b9e8-aeadf593cefb"
+          },
+          "type": "Request",
+          "kind": "PowerAppV2",
+          "inputs": {
+            "schema": {
+              "type": "object",
+              "properties": {
+                "number": {
+                  "description": "Please enter a number",
+                  "title": "ID_File",
+                  "type": "number",
+                  "x-ms-content-hint": "NUMBER",
+                  "x-ms-dynamically-added": true
+                },
+                "number_1": {
+                  "description": "Please enter a number",
+                  "title": "Mode",
+                  "type": "number",
+                  "x-ms-content-hint": "NUMBER",
+                  "x-ms-dynamically-added": true
+                },
+                "text": {
+                  "description": "Please enter your input",
+                  "title": "TaskStatus",
+                  "type": "string",
+                  "x-ms-content-hint": "TEXT",
+                  "x-ms-dynamically-added": true
+                },
+                "number_2": {
+                  "description": "Please enter a number",
+                  "title": "TaskFromUserLevel",
+                  "type": "number",
+                  "x-ms-content-hint": "NUMBER",
+                  "x-ms-dynamically-added": true
+                },
+                "email": {
+                  "description": "Enter an email address.",
+                  "format": "email",
+                  "title": "UserEmail",
+                  "type": "string",
+                  "x-ms-content-hint": "EMAIL",
+                  "x-ms-dynamically-added": true
+                }
+              },
+              "required": [
+                "number",
+                "number_1",
+                "text",
+                "number_2",
+                "email"
+              ]
+            }
+          }
+        }
+      },
+      "actions": {
+        "Condition_Is_CEO_Task": {
+          "actions": {
+            "Condition_Final_or_Working_CEO_Task": {
+              "actions": {
+                "Switch_-_Final_1": {
+                  "cases": {
+                    "3_=_View_-_Final_1": {
+                      "case": 3,
+                      "actions": {
+                        "Create_sharing_link_for_a_file_or_folder_-_View_Link_-_Final_-_CEO_Task": {
+                          "type": "OpenApiConnection",
+                          "inputs": {
+                            "parameters": {
+                              "dataset": "@parameters('Executive Task Site (tms_ExecutiveTaskSite)')",
+                              "table": "@parameters('Executive Final Y2026 Document Library (tms_ExecutiveFinalY2026DocumentLibrary)')",
+                              "id": "@triggerBody()?['number']",
+                              "permission/type": "view",
+                              "permission/scope": "organization"
+                            },
+                            "host": {
+                              "apiId": "/providers/Microsoft.PowerApps/apis/shared_sharepointonline",
+                              "operationId": "CreateSharingLink",
+                              "connectionName": "shared_sharepointonline-1"
+                            }
+                          }
+                        },
+                        "Respond_to_a_Power_App_or_flow_-_View_-_Final_1": {
+                          "runAfter": {
+                            "Create_sharing_link_for_a_file_or_folder_-_View_Link_-_Final_-_CEO_Task": [
+                              "Succeeded"
+                            ],
+                            "Grant_access_to_an_item_or_a_folder_-__View_Access-_Final_-_CEO_Task": [
+                              "Succeeded"
+                            ]
+                          },
+                          "type": "Response",
+                          "kind": "PowerApp",
+                          "inputs": {
+                            "schema": {
+                              "type": "object",
+                              "properties": {
+                                "filelink": {
+                                  "title": "FileLink",
+                                  "type": "string",
+                                  "x-ms-content-hint": "TEXT",
+                                  "x-ms-dynamically-added": true
+                                },
+                                "success": {
+                                  "title": "Success",
+                                  "type": "boolean",
+                                  "x-ms-content-hint": "BOOLEAN",
+                                  "x-ms-dynamically-added": true
+                                }
+                              },
+                              "additionalProperties": {}
+                            },
+                            "statusCode": 200,
+                            "body": {
+                              "filelink": "@{outputs('Create_sharing_link_for_a_file_or_folder_-_View_Link_-_Final_-_CEO_Task')?['body/link/webUrl']}",
+                              "success": true
+                            }
+                          }
+                        },
+                        "Grant_access_to_an_item_or_a_folder_-__View_Access-_Final_-_CEO_Task": {
+                          "type": "OpenApiConnection",
+                          "inputs": {
+                            "parameters": {
+                              "dataset": "@parameters('Executive Task Site (tms_ExecutiveTaskSite)')",
+                              "table": "@parameters('Executive Final Y2026 Document Library (tms_ExecutiveFinalY2026DocumentLibrary)')",
+                              "id": "@triggerBody()?['number']",
+                              "parameter/recipients": "@triggerBody()?['email']",
+                              "parameter/roleValue": "role:1073741826"
+                            },
+                            "host": {
+                              "apiId": "/providers/Microsoft.PowerApps/apis/shared_sharepointonline",
+                              "operationId": "GrantAccess",
+                              "connectionName": "shared_sharepointonline-1"
+                            }
+                          }
+                        }
+                      }
+                    }
+                  },
+                  "default": {
+                    "actions": {
+                      "Respond_to_a_Power_App_or_flow_-_None_-_Final_1": {
+                        "type": "Response",
+                        "kind": "PowerApp",
+                        "inputs": {
+                          "schema": {
+                            "type": "object",
+                            "properties": {
+                              "filelink": {
+                                "title": "FileLink",
+                                "type": "string",
+                                "x-ms-content-hint": "TEXT",
+                                "x-ms-dynamically-added": true
+                              },
+                              "success": {
+                                "title": "Success",
+                                "type": "boolean",
+                                "x-ms-content-hint": "BOOLEAN",
+                                "x-ms-dynamically-added": true
+                              }
+                            },
+                            "additionalProperties": {}
+                          },
+                          "statusCode": 200,
+                          "body": {
+                            "success": false
+                          }
+                        }
+                      }
+                    }
+                  },
+                  "expression": "@triggerBody()?['number_1']",
+                  "type": "Switch",
+                  "description": "1 = Edit\n2 = Review\n3 = View"
+                }
+              },
+              "else": {
+                "actions": {
+                  "Switch_-_Working_1": {
+                    "cases": {
+                      "1_=_Edit_-_Working_1": {
+                        "case": 1,
+                        "actions": {
+                          "Create_sharing_link_for_a_file_or_folder_-_Edit_Link_-_Working_CEO_Task": {
+                            "type": "OpenApiConnection",
+                            "inputs": {
+                              "parameters": {
+                                "dataset": "@parameters('Executive Task Site (tms_ExecutiveTaskSite)')",
+                                "table": "@parameters('Executive Working Y2026 Document Library (tms_ExecutiveWorkingY2026DocumentLibrary)')",
+                                "id": "@triggerBody()?['number']",
+                                "permission/type": "edit",
+                                "permission/scope": "organization"
+                              },
+                              "host": {
+                                "apiId": "/providers/Microsoft.PowerApps/apis/shared_sharepointonline",
+                                "operationId": "CreateSharingLink",
+                                "connectionName": "shared_sharepointonline-1"
+                              }
+                            }
+                          },
+                          "Respond_to_a_Power_App_or_flow_-_Edit_-_Working_1": {
+                            "runAfter": {
+                              "Create_sharing_link_for_a_file_or_folder_-_Edit_Link_-_Working_CEO_Task": [
+                                "Succeeded"
+                              ],
+                              "Grant_access_to_an_item_or_a_folder_-__Edit_Access-_Final_-_Working_CEO_Task": [
+                                "Succeeded"
+                              ]
+                            },
+                            "type": "Response",
+                            "kind": "PowerApp",
+                            "inputs": {
+                              "schema": {
+                                "type": "object",
+                                "properties": {
+                                  "filelink": {
+                                    "title": "FileLink",
+                                    "type": "string",
+                                    "x-ms-content-hint": "TEXT",
+                                    "x-ms-dynamically-added": true
+                                  },
+                                  "success": {
+                                    "title": "Success",
+                                    "type": "boolean",
+                                    "x-ms-content-hint": "BOOLEAN",
+                                    "x-ms-dynamically-added": true
+                                  }
+                                },
+                                "additionalProperties": {}
+                              },
+                              "statusCode": 200,
+                              "body": {
+                                "filelink": "@{outputs('Create_sharing_link_for_a_file_or_folder_-_Edit_Link_-_Working_CEO_Task')?['body/link/webUrl']}",
+                                "success": true
+                              }
+                            }
+                          },
+                          "Grant_access_to_an_item_or_a_folder_-__Edit_Access-_Final_-_Working_CEO_Task": {
+                            "type": "OpenApiConnection",
+                            "inputs": {
+                              "parameters": {
+                                "dataset": "@parameters('Executive Task Site (tms_ExecutiveTaskSite)')",
+                                "table": "@parameters('Executive Working Y2026 Document Library (tms_ExecutiveWorkingY2026DocumentLibrary)')",
+                                "id": "@triggerBody()?['number']",
+                                "parameter/recipients": "@triggerBody()?['email']",
+                                "parameter/roleValue": "role:1073741827"
+                              },
+                              "host": {
+                                "apiId": "/providers/Microsoft.PowerApps/apis/shared_sharepointonline",
+                                "operationId": "GrantAccess",
+                                "connectionName": "shared_sharepointonline-1"
+                              }
+                            }
+                          }
+                        }
+                      },
+                      "2_=_Review_-_Working_1": {
+                        "case": 2,
+                        "actions": {
+                          "Create_sharing_link_for_a_file_or_folder_-_Review_Link_-_Working_-_CEO_Task": {
+                            "type": "OpenApiConnection",
+                            "inputs": {
+                              "parameters": {
+                                "dataset": "@parameters('Executive Task Site (tms_ExecutiveTaskSite)')",
+                                "table": "@parameters('Executive Working Y2026 Document Library (tms_ExecutiveWorkingY2026DocumentLibrary)')",
+                                "id": "@triggerBody()?['number']",
+                                "permission/type": "2",
+                                "permission/scope": "organization"
+                              },
+                              "host": {
+                                "apiId": "/providers/Microsoft.PowerApps/apis/shared_sharepointonline",
+                                "operationId": "CreateSharingLink",
+                                "connectionName": "shared_sharepointonline-1"
+                              }
+                            }
+                          },
+                          "Respond_to_a_Power_App_or_flow_-_Review_-_Working_1": {
+                            "runAfter": {
+                              "Create_sharing_link_for_a_file_or_folder_-_Review_Link_-_Working_-_CEO_Task": [
+                                "Succeeded"
+                              ],
+                              "Grant_access_to_an_item_or_a_folder_-__View_Access-_Final_-_Working_CEO_Task": [
+                                "Succeeded"
+                              ]
+                            },
+                            "type": "Response",
+                            "kind": "PowerApp",
+                            "inputs": {
+                              "schema": {
+                                "type": "object",
+                                "properties": {
+                                  "filelink": {
+                                    "title": "FileLink",
+                                    "type": "string",
+                                    "x-ms-content-hint": "TEXT",
+                                    "x-ms-dynamically-added": true
+                                  },
+                                  "success": {
+                                    "title": "Success",
+                                    "type": "boolean",
+                                    "x-ms-content-hint": "BOOLEAN",
+                                    "x-ms-dynamically-added": true
+                                  }
+                                },
+                                "additionalProperties": {}
+                              },
+                              "statusCode": 200,
+                              "body": {
+                                "filelink": "@{outputs('Create_sharing_link_for_a_file_or_folder_-_Review_Link_-_Working_-_CEO_Task')?['body/link/webUrl']}",
+                                "success": true
+                              }
+                            }
+                          },
+                          "Grant_access_to_an_item_or_a_folder_-__View_Access-_Final_-_Working_CEO_Task": {
+                            "type": "OpenApiConnection",
+                            "inputs": {
+                              "parameters": {
+                                "dataset": "@parameters('Executive Task Site (tms_ExecutiveTaskSite)')",
+                                "table": "@parameters('Executive Working Y2026 Document Library (tms_ExecutiveWorkingY2026DocumentLibrary)')",
+                                "id": "@triggerBody()?['number']",
+                                "parameter/recipients": "@triggerBody()?['email']",
+                                "parameter/roleValue": "role:1073741826"
+                              },
+                              "host": {
+                                "apiId": "/providers/Microsoft.PowerApps/apis/shared_sharepointonline",
+                                "operationId": "GrantAccess",
+                                "connectionName": "shared_sharepointonline-1"
+                              }
+                            }
+                          }
+                        }
+                      },
+                      "3_=_View_-_Working_1": {
+                        "case": 3,
+                        "actions": {
+                          "Create_sharing_link_for_a_file_or_folder_-_View_Link_-_Working_1": {
+                            "type": "OpenApiConnection",
+                            "inputs": {
+                              "parameters": {
+                                "dataset": "@parameters('Executive Task Site (tms_ExecutiveTaskSite)')",
+                                "table": "@parameters('Executive Working Y2026 Document Library (tms_ExecutiveWorkingY2026DocumentLibrary)')",
+                                "id": "@triggerBody()?['number']",
+                                "permission/type": "view",
+                                "permission/scope": "organization"
+                              },
+                              "host": {
+                                "apiId": "/providers/Microsoft.PowerApps/apis/shared_sharepointonline",
+                                "operationId": "CreateSharingLink",
+                                "connectionName": "shared_sharepointonline-1"
+                              }
+                            }
+                          },
+                          "Respond_to_a_Power_App_or_flow_-_View_-_Working_1": {
+                            "runAfter": {
+                              "Create_sharing_link_for_a_file_or_folder_-_View_Link_-_Working_1": [
+                                "Succeeded"
+                              ],
+                              "Grant_access_to_an_item_or_a_folder_-__View_Access-_Final_-_Working_CEO_Task_1": [
+                                "Succeeded"
+                              ]
+                            },
+                            "type": "Response",
+                            "kind": "PowerApp",
+                            "inputs": {
+                              "schema": {
+                                "type": "object",
+                                "properties": {
+                                  "filelink": {
+                                    "title": "FileLink",
+                                    "type": "string",
+                                    "x-ms-content-hint": "TEXT",
+                                    "x-ms-dynamically-added": true
+                                  },
+                                  "success": {
+                                    "title": "Success",
+                                    "type": "boolean",
+                                    "x-ms-content-hint": "BOOLEAN",
+                                    "x-ms-dynamically-added": true
+                                  }
+                                },
+                                "additionalProperties": {}
+                              },
+                              "statusCode": 200,
+                              "body": {
+                                "filelink": "@{outputs('Create_sharing_link_for_a_file_or_folder_-_View_Link_-_Working_1')?['body/link/webUrl']}",
+                                "success": true
+                              }
+                            }
+                          },
+                          "Grant_access_to_an_item_or_a_folder_-__View_Access-_Final_-_Working_CEO_Task_1": {
+                            "type": "OpenApiConnection",
+                            "inputs": {
+                              "parameters": {
+                                "dataset": "@parameters('Executive Task Site (tms_ExecutiveTaskSite)')",
+                                "table": "@parameters('Executive Working Y2026 Document Library (tms_ExecutiveWorkingY2026DocumentLibrary)')",
+                                "id": "@triggerBody()?['number']",
+                                "parameter/recipients": "@triggerBody()?['email']",
+                                "parameter/roleValue": "role:1073741826"
+                              },
+                              "host": {
+                                "apiId": "/providers/Microsoft.PowerApps/apis/shared_sharepointonline",
+                                "operationId": "GrantAccess",
+                                "connectionName": "shared_sharepointonline-1"
+                              }
+                            }
+                          }
+                        }
+                      }
+                    },
+                    "default": {
+                      "actions": {
+                        "Respond_to_a_Power_App_or_flow_-_None_1": {
+                          "type": "Response",
+                          "kind": "PowerApp",
+                          "inputs": {
+                            "schema": {
+                              "type": "object",
+                              "properties": {
+                                "filelink": {
+                                  "title": "FileLink",
+                                  "type": "string",
+                                  "x-ms-content-hint": "TEXT",
+                                  "x-ms-dynamically-added": true
+                                },
+                                "success": {
+                                  "title": "Success",
+                                  "type": "boolean",
+                                  "x-ms-content-hint": "BOOLEAN",
+                                  "x-ms-dynamically-added": true
+                                }
+                              },
+                              "additionalProperties": {}
+                            },
+                            "statusCode": 200,
+                            "body": {
+                              "success": false
+                            }
+                          }
+                        }
+                      }
+                    },
+                    "expression": "@triggerBody()?['number_1']",
+                    "type": "Switch",
+                    "description": "1 = Edit\n2 = Review\n3 = View"
+                  }
+                }
+              },
+              "expression": {
+                "and": [
+                  {
+                    "equals": [
+                      "@triggerBody()?['text']",
+                      "Done"
+                    ]
+                  }
+                ]
+              },
+              "type": "If"
+            }
+          },
+          "runAfter": {},
+          "else": {
+            "actions": {
+              "Condition_Final_or_Working": {
+                "actions": {
+                  "Switch_-_Final": {
+                    "cases": {
+                      "3_=_View_-_Final": {
+                        "case": 3,
+                        "actions": {
+                          "Create_sharing_link_for_a_file_or_folder_-_View_Link_-_Final": {
+                            "type": "OpenApiConnection",
+                            "inputs": {
+                              "parameters": {
+                                "dataset": "@parameters('Task Management Site (tms_TaskManagementSite)')",
+                                "table": "@parameters('Final Y2026 Document Library (tms_FinalY2026)')",
+                                "id": "@triggerBody()?['number']",
+                                "permission/type": "view",
+                                "permission/scope": "organization"
+                              },
+                              "host": {
+                                "apiId": "/providers/Microsoft.PowerApps/apis/shared_sharepointonline",
+                                "operationId": "CreateSharingLink",
+                                "connectionName": "shared_sharepointonline-1"
+                              }
+                            }
+                          },
+                          "Respond_to_a_Power_App_or_flow_-_View_-_Final": {
+                            "runAfter": {
+                              "Create_sharing_link_for_a_file_or_folder_-_View_Link_-_Final": [
+                                "Succeeded"
+                              ],
+                              "Grant_access_to_an_item_or_a_folder_-__View_Access_-_View_Link_-_Final": [
+                                "Succeeded"
+                              ]
+                            },
+                            "type": "Response",
+                            "kind": "PowerApp",
+                            "inputs": {
+                              "schema": {
+                                "type": "object",
+                                "properties": {
+                                  "filelink": {
+                                    "title": "FileLink",
+                                    "type": "string",
+                                    "x-ms-content-hint": "TEXT",
+                                    "x-ms-dynamically-added": true
+                                  },
+                                  "success": {
+                                    "title": "Success",
+                                    "type": "boolean",
+                                    "x-ms-content-hint": "BOOLEAN",
+                                    "x-ms-dynamically-added": true
+                                  }
+                                },
+                                "additionalProperties": {}
+                              },
+                              "statusCode": 200,
+                              "body": {
+                                "filelink": "@{outputs('Create_sharing_link_for_a_file_or_folder_-_View_Link_-_Final')?['body/link/webUrl']}",
+                                "success": true
+                              }
+                            }
+                          },
+                          "Grant_access_to_an_item_or_a_folder_-__View_Access_-_View_Link_-_Final": {
+                            "type": "OpenApiConnection",
+                            "inputs": {
+                              "parameters": {
+                                "dataset": "@parameters('Task Management Site (tms_TaskManagementSite)')",
+                                "table": "@parameters('Final Y2026 Document Library (tms_FinalY2026)')",
+                                "id": "@triggerBody()?['number']",
+                                "parameter/recipients": "@triggerBody()?['email']",
+                                "parameter/roleValue": "role:1073741826"
+                              },
+                              "host": {
+                                "apiId": "/providers/Microsoft.PowerApps/apis/shared_sharepointonline",
+                                "operationId": "GrantAccess",
+                                "connectionName": "shared_sharepointonline-1"
+                              }
+                            }
+                          }
+                        }
+                      }
+                    },
+                    "default": {
+                      "actions": {
+                        "Respond_to_a_Power_App_or_flow_-_None_-_Final": {
+                          "type": "Response",
+                          "kind": "PowerApp",
+                          "inputs": {
+                            "schema": {
+                              "type": "object",
+                              "properties": {
+                                "filelink": {
+                                  "title": "FileLink",
+                                  "type": "string",
+                                  "x-ms-content-hint": "TEXT",
+                                  "x-ms-dynamically-added": true
+                                },
+                                "success": {
+                                  "title": "Success",
+                                  "type": "boolean",
+                                  "x-ms-content-hint": "BOOLEAN",
+                                  "x-ms-dynamically-added": true
+                                }
+                              },
+                              "additionalProperties": {}
+                            },
+                            "statusCode": 200,
+                            "body": {
+                              "success": false
+                            }
+                          }
+                        }
+                      }
+                    },
+                    "expression": "@triggerBody()?['number_1']",
+                    "type": "Switch",
+                    "description": "1 = Edit\n2 = Review\n3 = View"
+                  }
+                },
+                "else": {
+                  "actions": {
+                    "Switch_-_Working": {
+                      "cases": {
+                        "1_=_Edit_-_Working": {
+                          "case": 1,
+                          "actions": {
+                            "Create_sharing_link_for_a_file_or_folder_-_Edit_Link_-_Working": {
+                              "type": "OpenApiConnection",
+                              "inputs": {
+                                "parameters": {
+                                  "dataset": "@parameters('Task Management Site (tms_TaskManagementSite)')",
+                                  "table": "@parameters('Working Y2026 Document Library (tms_WorkingY2026DocumentLibrary)')",
+                                  "id": "@triggerBody()?['number']",
+                                  "permission/type": "edit",
+                                  "permission/scope": "organization"
+                                },
+                                "host": {
+                                  "apiId": "/providers/Microsoft.PowerApps/apis/shared_sharepointonline",
+                                  "operationId": "CreateSharingLink",
+                                  "connectionName": "shared_sharepointonline-1"
+                                }
+                              }
+                            },
+                            "Respond_to_a_Power_App_or_flow_-_Edit_-_Working": {
+                              "runAfter": {
+                                "Create_sharing_link_for_a_file_or_folder_-_Edit_Link_-_Working": [
+                                  "Succeeded"
+                                ],
+                                "Grant_access_to_an_item_or_a_folder_-__Edit_Access_-_Working": [
+                                  "Succeeded"
+                                ]
+                              },
+                              "type": "Response",
+                              "kind": "PowerApp",
+                              "inputs": {
+                                "schema": {
+                                  "type": "object",
+                                  "properties": {
+                                    "filelink": {
+                                      "title": "FileLink",
+                                      "type": "string",
+                                      "x-ms-content-hint": "TEXT",
+                                      "x-ms-dynamically-added": true
+                                    },
+                                    "success": {
+                                      "title": "Success",
+                                      "type": "boolean",
+                                      "x-ms-content-hint": "BOOLEAN",
+                                      "x-ms-dynamically-added": true
+                                    }
+                                  },
+                                  "additionalProperties": {}
+                                },
+                                "statusCode": 200,
+                                "body": {
+                                  "filelink": "@{outputs('Create_sharing_link_for_a_file_or_folder_-_Edit_Link_-_Working')?['body/link/webUrl']}",
+                                  "success": true
+                                }
+                              }
+                            },
+                            "Grant_access_to_an_item_or_a_folder_-__Edit_Access_-_Working": {
+                              "type": "OpenApiConnection",
+                              "inputs": {
+                                "parameters": {
+                                  "dataset": "@parameters('Task Management Site (tms_TaskManagementSite)')",
+                                  "table": "@parameters('Working Y2026 Document Library (tms_WorkingY2026DocumentLibrary)')",
+                                  "id": "@triggerBody()?['number']",
+                                  "parameter/recipients": "@triggerBody()?['email']",
+                                  "parameter/roleValue": "role:1073741827"
+                                },
+                                "host": {
+                                  "apiId": "/providers/Microsoft.PowerApps/apis/shared_sharepointonline",
+                                  "operationId": "GrantAccess",
+                                  "connectionName": "shared_sharepointonline-1"
+                                }
+                              }
+                            }
+                          }
+                        },
+                        "2_=_Review_-_Working": {
+                          "case": 2,
+                          "actions": {
+                            "Create_sharing_link_for_a_file_or_folder_-_Review_Link_-_Working": {
+                              "type": "OpenApiConnection",
+                              "inputs": {
+                                "parameters": {
+                                  "dataset": "@parameters('Task Management Site (tms_TaskManagementSite)')",
+                                  "table": "@parameters('Working Y2026 Document Library (tms_WorkingY2026DocumentLibrary)')",
+                                  "id": "@triggerBody()?['number']",
+                                  "permission/type": "2",
+                                  "permission/scope": "organization"
+                                },
+                                "host": {
+                                  "apiId": "/providers/Microsoft.PowerApps/apis/shared_sharepointonline",
+                                  "operationId": "CreateSharingLink",
+                                  "connectionName": "shared_sharepointonline-1"
+                                }
+                              }
+                            },
+                            "Respond_to_a_Power_App_or_flow_-_Review_-_Working": {
+                              "runAfter": {
+                                "Create_sharing_link_for_a_file_or_folder_-_Review_Link_-_Working": [
+                                  "Succeeded"
+                                ],
+                                "Grant_access_to_an_item_or_a_folder_-__View_Access_-_Working_1": [
+                                  "Succeeded"
+                                ]
+                              },
+                              "type": "Response",
+                              "kind": "PowerApp",
+                              "inputs": {
+                                "schema": {
+                                  "type": "object",
+                                  "properties": {
+                                    "filelink": {
+                                      "title": "FileLink",
+                                      "type": "string",
+                                      "x-ms-content-hint": "TEXT",
+                                      "x-ms-dynamically-added": true
+                                    },
+                                    "success": {
+                                      "title": "Success",
+                                      "type": "boolean",
+                                      "x-ms-content-hint": "BOOLEAN",
+                                      "x-ms-dynamically-added": true
+                                    }
+                                  },
+                                  "additionalProperties": {}
+                                },
+                                "statusCode": 200,
+                                "body": {
+                                  "filelink": "@{outputs('Create_sharing_link_for_a_file_or_folder_-_Review_Link_-_Working')?['body/link/webUrl']}",
+                                  "success": true
+                                }
+                              }
+                            },
+                            "Grant_access_to_an_item_or_a_folder_-__View_Access_-_Working_1": {
+                              "type": "OpenApiConnection",
+                              "inputs": {
+                                "parameters": {
+                                  "dataset": "@parameters('Task Management Site (tms_TaskManagementSite)')",
+                                  "table": "@parameters('Working Y2026 Document Library (tms_WorkingY2026DocumentLibrary)')",
+                                  "id": "@triggerBody()?['number']",
+                                  "parameter/recipients": "@triggerBody()?['email']",
+                                  "parameter/roleValue": "role:1073741826"
+                                },
+                                "host": {
+                                  "apiId": "/providers/Microsoft.PowerApps/apis/shared_sharepointonline",
+                                  "operationId": "GrantAccess",
+                                  "connectionName": "shared_sharepointonline-1"
+                                }
+                              }
+                            }
+                          }
+                        },
+                        "3_=_View_-_Working": {
+                          "case": 3,
+                          "actions": {
+                            "Create_sharing_link_for_a_file_or_folder_-_View_Link_-_Working": {
+                              "type": "OpenApiConnection",
+                              "inputs": {
+                                "parameters": {
+                                  "dataset": "@parameters('Task Management Site (tms_TaskManagementSite)')",
+                                  "table": "@parameters('Working Y2026 Document Library (tms_WorkingY2026DocumentLibrary)')",
+                                  "id": "@triggerBody()?['number']",
+                                  "permission/type": "view",
+                                  "permission/scope": "organization"
+                                },
+                                "host": {
+                                  "apiId": "/providers/Microsoft.PowerApps/apis/shared_sharepointonline",
+                                  "operationId": "CreateSharingLink",
+                                  "connectionName": "shared_sharepointonline-1"
+                                }
+                              }
+                            },
+                            "Respond_to_a_Power_App_or_flow_-_View_-_Working": {
+                              "runAfter": {
+                                "Create_sharing_link_for_a_file_or_folder_-_View_Link_-_Working": [
+                                  "Succeeded"
+                                ],
+                                "Grant_access_to_an_item_or_a_folder_-__View_Access_-_Working_1_1": [
+                                  "Succeeded"
+                                ]
+                              },
+                              "type": "Response",
+                              "kind": "PowerApp",
+                              "inputs": {
+                                "schema": {
+                                  "type": "object",
+                                  "properties": {
+                                    "filelink": {
+                                      "title": "FileLink",
+                                      "type": "string",
+                                      "x-ms-content-hint": "TEXT",
+                                      "x-ms-dynamically-added": true
+                                    },
+                                    "success": {
+                                      "title": "Success",
+                                      "type": "boolean",
+                                      "x-ms-content-hint": "BOOLEAN",
+                                      "x-ms-dynamically-added": true
+                                    }
+                                  },
+                                  "additionalProperties": {}
+                                },
+                                "statusCode": 200,
+                                "body": {
+                                  "filelink": "@{outputs('Create_sharing_link_for_a_file_or_folder_-_View_Link_-_Working')?['body/link/webUrl']}",
+                                  "success": true
+                                }
+                              }
+                            },
+                            "Grant_access_to_an_item_or_a_folder_-__View_Access_-_Working_1_1": {
+                              "type": "OpenApiConnection",
+                              "inputs": {
+                                "parameters": {
+                                  "dataset": "@parameters('Task Management Site (tms_TaskManagementSite)')",
+                                  "table": "@parameters('Working Y2026 Document Library (tms_WorkingY2026DocumentLibrary)')",
+                                  "id": "@triggerBody()?['number']",
+                                  "parameter/recipients": "@triggerBody()?['email']",
+                                  "parameter/roleValue": "role:1073741826"
+                                },
+                                "host": {
+                                  "apiId": "/providers/Microsoft.PowerApps/apis/shared_sharepointonline",
+                                  "operationId": "GrantAccess",
+                                  "connectionName": "shared_sharepointonline-1"
+                                }
+                              }
+                            }
+                          }
+                        }
+                      },
+                      "default": {
+                        "actions": {
+                          "Respond_to_a_Power_App_or_flow_-_None": {
+                            "type": "Response",
+                            "kind": "PowerApp",
+                            "inputs": {
+                              "schema": {
+                                "type": "object",
+                                "properties": {
+                                  "filelink": {
+                                    "title": "FileLink",
+                                    "type": "string",
+                                    "x-ms-content-hint": "TEXT",
+                                    "x-ms-dynamically-added": true
+                                  },
+                                  "success": {
+                                    "title": "Success",
+                                    "type": "boolean",
+                                    "x-ms-content-hint": "BOOLEAN",
+                                    "x-ms-dynamically-added": true
+                                  }
+                                },
+                                "additionalProperties": {}
+                              },
+                              "statusCode": 200,
+                              "body": {
+                                "success": false
+                              }
+                            }
+                          }
+                        }
+                      },
+                      "expression": "@triggerBody()?['number_1']",
+                      "type": "Switch",
+                      "description": "1 = Edit\n2 = Review\n3 = View"
+                    }
+                  }
+                },
+                "expression": {
+                  "and": [
+                    {
+                      "equals": [
+                        "@triggerBody()?['text']",
+                        "Done"
+                      ]
+                    }
+                  ]
+                },
+                "type": "If"
+              }
+            }
+          },
+          "expression": {
+            "and": [
+              {
+                "equals": [
+                  "@triggerBody()?['number_2']",
+                  4
+                ]
+              }
+            ]
+          },
+          "type": "If"
+        }
+      }
+    },
+    "templateName": null
+  },
+  "schemaVersion": "1.0.0.0"
+}

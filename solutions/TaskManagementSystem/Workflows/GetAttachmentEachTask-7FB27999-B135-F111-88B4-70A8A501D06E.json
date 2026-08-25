@@ -1,0 +1,1037 @@
+{
+  "properties": {
+    "connectionReferences": {
+      "shared_sharepointonline-1": {
+        "runtimeSource": "embedded",
+        "connection": {
+          "connectionReferenceLogicalName": "tms_SharePointAdmin"
+        },
+        "api": {
+          "name": "shared_sharepointonline"
+        }
+      }
+    },
+    "definition": {
+      "$schema": "https://schema.management.azure.com/providers/Microsoft.Logic/schemas/2016-06-01/workflowdefinition.json#",
+      "contentVersion": "1.0.0.0",
+      "parameters": {
+        "$authentication": {
+          "defaultValue": {},
+          "type": "SecureObject"
+        },
+        "$connections": {
+          "defaultValue": {},
+          "type": "Object"
+        },
+        "Task Management Site (tms_TaskManagementSite)": {
+          "defaultValue": "https://m365b467805.sharepoint.com/sites/TaskManagement",
+          "type": "String",
+          "metadata": {
+            "schemaName": "tms_TaskManagementSite"
+          }
+        },
+        "Working Y2026 Document Library (tms_WorkingY2026DocumentLibrary)": {
+          "defaultValue": "7c1dfcae-9cee-4558-a4a1-47615324c546",
+          "type": "String",
+          "metadata": {
+            "schemaName": "tms_WorkingY2026DocumentLibrary"
+          }
+        },
+        "Final Y2026 Document Library (tms_FinalY2026)": {
+          "defaultValue": "17a11490-bd1d-4881-b950-79eeeee2a4bd",
+          "type": "String",
+          "metadata": {
+            "schemaName": "tms_FinalY2026"
+          }
+        },
+        "Executive Task Site (tms_ExecutiveTaskSite)": {
+          "defaultValue": "https://m365b467805.sharepoint.com/sites/ExecutiveTask",
+          "type": "String",
+          "metadata": {
+            "schemaName": "tms_ExecutiveTaskSite"
+          }
+        },
+        "Executive Final Y2026 Document Library (tms_ExecutiveFinalY2026DocumentLibrary)": {
+          "defaultValue": "99f0f85d-c1aa-4127-81d9-283cf663d24d",
+          "type": "String",
+          "metadata": {
+            "schemaName": "tms_ExecutiveFinalY2026DocumentLibrary"
+          }
+        },
+        "Executive Working Y2026 Document Library (tms_ExecutiveWorkingY2026DocumentLibrary)": {
+          "defaultValue": "f69588e1-3e9f-42eb-ae92-a653c6a746ce",
+          "type": "String",
+          "metadata": {
+            "schemaName": "tms_ExecutiveWorkingY2026DocumentLibrary"
+          }
+        },
+        "Document Library Name for Executive Final (tms_DocumentLibraryNameforExecutiveFinal)": {
+          "defaultValue": "Executive Final Y2026",
+          "type": "String",
+          "metadata": {
+            "schemaName": "tms_DocumentLibraryNameforExecutiveFinal"
+          }
+        },
+        "Document Library Name for Executive Working (tms_DocumentLibraryNameforExecutiveWorking)": {
+          "defaultValue": "Executive Working Y2026",
+          "type": "String",
+          "metadata": {
+            "schemaName": "tms_DocumentLibraryNameforExecutiveWorking"
+          }
+        },
+        "Document Library Name for Final (tms_DocumentLibraryNameforFinalY2026)": {
+          "defaultValue": "Final Y2026",
+          "type": "String",
+          "metadata": {
+            "schemaName": "tms_DocumentLibraryNameforFinalY2026"
+          }
+        },
+        "Document Library Name for Working (tms_DocumentLibraryNameforWorking)": {
+          "defaultValue": "Working Y2026",
+          "type": "String",
+          "metadata": {
+            "schemaName": "tms_DocumentLibraryNameforWorking"
+          }
+        }
+      },
+      "triggers": {
+        "manual": {
+          "metadata": {
+            "operationMetadataId": "ae14d66e-468b-45d1-b9e8-aeadf593cefb"
+          },
+          "type": "Request",
+          "kind": "PowerAppV2",
+          "inputs": {
+            "schema": {
+              "type": "object",
+              "properties": {
+                "number": {
+                  "title": "ID_Task",
+                  "type": "number",
+                  "x-ms-dynamically-added": true,
+                  "description": "Please enter a number",
+                  "x-ms-content-hint": "NUMBER"
+                },
+                "text": {
+                  "description": "Please enter your input",
+                  "title": "TaskStatus",
+                  "type": "string",
+                  "x-ms-content-hint": "TEXT",
+                  "x-ms-dynamically-added": true
+                },
+                "text_1": {
+                  "description": "Please enter your input",
+                  "title": "UserDivision",
+                  "type": "string",
+                  "x-ms-content-hint": "TEXT",
+                  "x-ms-dynamically-added": true
+                },
+                "number_1": {
+                  "description": "Please enter a number",
+                  "title": "TaskFromUserLevel",
+                  "type": "number",
+                  "x-ms-content-hint": "NUMBER",
+                  "x-ms-dynamically-added": true
+                },
+                "number_2": {
+                  "description": "Please enter a number",
+                  "title": "TaskViewedByUserLevel",
+                  "type": "number",
+                  "x-ms-content-hint": "NUMBER",
+                  "x-ms-dynamically-added": true
+                }
+              },
+              "required": [
+                "number",
+                "text",
+                "text_1",
+                "number_1",
+                "number_2"
+              ]
+            }
+          }
+        }
+      },
+      "actions": {
+        "Condition_Is_CEO_Task": {
+          "actions": {
+            "Condition_Final_or_Working_-_CEO_Task": {
+              "actions": {
+                "Condition_Viewed_By_User_Level_Greater_Than_2_-_CEO_Task": {
+                  "actions": {
+                    "Get_files_(properties_only)_-_Get_Folder_Name_-_Final_-_CEO_Task_-_Greater_2": {
+                      "type": "OpenApiConnection",
+                      "inputs": {
+                        "parameters": {
+                          "dataset": "@parameters('Executive Task Site (tms_ExecutiveTaskSite)')",
+                          "table": "@parameters('Executive Final Y2026 Document Library (tms_ExecutiveFinalY2026DocumentLibrary)')",
+                          "$filter": "ID_Task eq @{triggerBody()?['number']}",
+                          "folderPath": "/@{parameters('Document Library Name for Executive Final (tms_DocumentLibraryNameforExecutiveFinal)')}/Service Account"
+                        },
+                        "host": {
+                          "apiId": "/providers/Microsoft.PowerApps/apis/shared_sharepointonline",
+                          "operationId": "GetFileItems",
+                          "connectionName": "shared_sharepointonline-1"
+                        }
+                      }
+                    },
+                    "Condition_-_Don't_Have_Folder_-_CEO_Task_1": {
+                      "actions": {
+                        "Respond_to_a_Power_App_or_flow_-_Final_6": {
+                          "type": "Response",
+                          "kind": "PowerApp",
+                          "inputs": {
+                            "schema": {
+                              "type": "object",
+                              "properties": {
+                                "value": {
+                                  "title": "Value",
+                                  "type": "string",
+                                  "x-ms-content-hint": "TEXT",
+                                  "x-ms-dynamically-added": true
+                                }
+                              },
+                              "additionalProperties": {}
+                            },
+                            "statusCode": 200,
+                            "body": {
+                              "value": "[]"
+                            }
+                          }
+                        }
+                      },
+                      "runAfter": {
+                        "Get_files_(properties_only)_-_Get_Folder_Name_-_Final_-_CEO_Task_-_Greater_2": [
+                          "Succeeded"
+                        ]
+                      },
+                      "else": {
+                        "actions": {
+                          "Get_files_(properties_only)_-_Files_in_Folder_-_Final_-_CEO_Task_-_Greater_2": {
+                            "type": "OpenApiConnection",
+                            "inputs": {
+                              "parameters": {
+                                "dataset": "@parameters('Executive Task Site (tms_ExecutiveTaskSite)')",
+                                "table": "@parameters('Executive Final Y2026 Document Library (tms_ExecutiveFinalY2026DocumentLibrary)')",
+                                "folderPath": "@{parameters('Document Library Name for Executive Final (tms_DocumentLibraryNameforExecutiveFinal)')}/Service Account/@{first(outputs('Get_files_(properties_only)_-_Get_Folder_Name_-_Final_-_CEO_Task_-_Greater_2')?['body/value'])?['{Name}']}"
+                              },
+                              "host": {
+                                "apiId": "/providers/Microsoft.PowerApps/apis/shared_sharepointonline",
+                                "operationId": "GetFileItems",
+                                "connectionName": "shared_sharepointonline-1"
+                              }
+                            }
+                          },
+                          "Select_-_Final_-_CEO_Task_-_Greater_2": {
+                            "runAfter": {
+                              "Get_files_(properties_only)_-_Files_in_Folder_-_Final_-_CEO_Task_-_Greater_2": [
+                                "Succeeded"
+                              ]
+                            },
+                            "type": "Select",
+                            "inputs": {
+                              "from": "@outputs('Get_files_(properties_only)_-_Files_in_Folder_-_Final_-_CEO_Task_-_Greater_2')?['body/value']",
+                              "select": {
+                                "ID": "@item()?['ID']",
+                                "File name with extension": "@{item()?['{FilenameWithExtension}']}",
+                                "Link to item": "@{item()?['{Link}']}",
+                                "File Identifier": "@{item()?['{Identifier}']}",
+                                "Name": "@{item()?['{Name}']}",
+                                "File_Uploaded_By": "@item()?['File_Uploaded_By']",
+                                "Modified": "@item()?['Modified']",
+                                "Created": "@item()?['Created']",
+                                "FullPath": "@{item()?['{FullPath}']}",
+                                "Version Number": "@{item()?['{VersionNumber}']}",
+                                "ID_Checklist": "@item()?['ID_Checklist']"
+                              }
+                            }
+                          },
+                          "Respond_to_a_Power_App_or_flow_-_Final_7": {
+                            "runAfter": {
+                              "Select_-_Final_-_CEO_Task_-_Greater_2": [
+                                "Succeeded"
+                              ]
+                            },
+                            "type": "Response",
+                            "kind": "PowerApp",
+                            "inputs": {
+                              "schema": {
+                                "type": "object",
+                                "properties": {
+                                  "value": {
+                                    "title": "Value",
+                                    "type": "string",
+                                    "x-ms-content-hint": "TEXT",
+                                    "x-ms-dynamically-added": true
+                                  }
+                                },
+                                "additionalProperties": {}
+                              },
+                              "statusCode": 200,
+                              "body": {
+                                "value": "@{body('Select_-_Final_-_CEO_Task_-_Greater_2')}"
+                              }
+                            }
+                          }
+                        }
+                      },
+                      "expression": {
+                        "and": [
+                          {
+                            "equals": [
+                              "@empty(outputs('Get_files_(properties_only)_-_Get_Folder_Name_-_Final_-_CEO_Task_-_Greater_2')?['body/value'])",
+                              true
+                            ]
+                          },
+                          {
+                            "equals": [
+                              "",
+                              ""
+                            ]
+                          }
+                        ]
+                      },
+                      "type": "If"
+                    }
+                  },
+                  "else": {
+                    "actions": {
+                      "Get_files_(properties_only)_-_Get_Folder_Name_-_Final_-_CEO_Task": {
+                        "type": "OpenApiConnection",
+                        "inputs": {
+                          "parameters": {
+                            "dataset": "@parameters('Executive Task Site (tms_ExecutiveTaskSite)')",
+                            "table": "@parameters('Executive Final Y2026 Document Library (tms_ExecutiveFinalY2026DocumentLibrary)')",
+                            "$filter": "ID_Task eq @{triggerBody()?['number']}",
+                            "folderPath": "/@{parameters('Document Library Name for Executive Final (tms_DocumentLibraryNameforExecutiveFinal)')}/@{triggerBody()?['text_1']}"
+                          },
+                          "host": {
+                            "apiId": "/providers/Microsoft.PowerApps/apis/shared_sharepointonline",
+                            "operationId": "GetFileItems",
+                            "connectionName": "shared_sharepointonline-1"
+                          }
+                        }
+                      },
+                      "Condition_-_Don't_Have_Folder_-_CEO_Task": {
+                        "actions": {
+                          "Respond_to_a_Power_App_or_flow_-_Final_2": {
+                            "type": "Response",
+                            "kind": "PowerApp",
+                            "inputs": {
+                              "schema": {
+                                "type": "object",
+                                "properties": {
+                                  "value": {
+                                    "title": "Value",
+                                    "type": "string",
+                                    "x-ms-content-hint": "TEXT",
+                                    "x-ms-dynamically-added": true
+                                  }
+                                },
+                                "additionalProperties": {}
+                              },
+                              "statusCode": 200,
+                              "body": {
+                                "value": "[]"
+                              }
+                            }
+                          }
+                        },
+                        "runAfter": {
+                          "Get_files_(properties_only)_-_Get_Folder_Name_-_Final_-_CEO_Task": [
+                            "Succeeded"
+                          ]
+                        },
+                        "else": {
+                          "actions": {
+                            "Get_files_(properties_only)_-_Files_in_Folder_-_Final_-_CEO_Task": {
+                              "type": "OpenApiConnection",
+                              "inputs": {
+                                "parameters": {
+                                  "dataset": "@parameters('Executive Task Site (tms_ExecutiveTaskSite)')",
+                                  "table": "@parameters('Executive Final Y2026 Document Library (tms_ExecutiveFinalY2026DocumentLibrary)')",
+                                  "folderPath": "@{parameters('Document Library Name for Executive Final (tms_DocumentLibraryNameforExecutiveFinal)')}/@{triggerBody()?['text_1']}/@{first(outputs('Get_files_(properties_only)_-_Get_Folder_Name_-_Final_-_CEO_Task')?['body/value'])?['{Name}']}"
+                                },
+                                "host": {
+                                  "apiId": "/providers/Microsoft.PowerApps/apis/shared_sharepointonline",
+                                  "operationId": "GetFileItems",
+                                  "connectionName": "shared_sharepointonline-1"
+                                }
+                              }
+                            },
+                            "Select_-_Final_-_CEO_Task": {
+                              "runAfter": {
+                                "Get_files_(properties_only)_-_Files_in_Folder_-_Final_-_CEO_Task": [
+                                  "Succeeded"
+                                ]
+                              },
+                              "type": "Select",
+                              "inputs": {
+                                "from": "@outputs('Get_files_(properties_only)_-_Files_in_Folder_-_Final_-_CEO_Task')?['body/value']",
+                                "select": {
+                                  "ID": "@item()?['ID']",
+                                  "File name with extension": "@{item()?['{FilenameWithExtension}']}",
+                                  "Link to item": "@{item()?['{Link}']}",
+                                  "File Identifier": "@{item()?['{Identifier}']}",
+                                  "Name": "@{item()?['{Name}']}",
+                                  "File_Uploaded_By": "@item()?['File_Uploaded_By']",
+                                  "Created": "@item()?['Created']",
+                                  "Modified": "@item()?['Modified']",
+                                  "FullPath": "@{item()?['{FullPath}']}",
+                                  "VersionNumber": "@{item()?['{VersionNumber}']}",
+                                  "ID_Checklist": "@item()?['ID_Checklist']"
+                                }
+                              }
+                            },
+                            "Respond_to_a_Power_App_or_flow_-_Final_3": {
+                              "runAfter": {
+                                "Select_-_Final_-_CEO_Task": [
+                                  "Succeeded"
+                                ]
+                              },
+                              "type": "Response",
+                              "kind": "PowerApp",
+                              "inputs": {
+                                "schema": {
+                                  "type": "object",
+                                  "properties": {
+                                    "value": {
+                                      "title": "Value",
+                                      "type": "string",
+                                      "x-ms-content-hint": "TEXT",
+                                      "x-ms-dynamically-added": true
+                                    }
+                                  },
+                                  "additionalProperties": {}
+                                },
+                                "statusCode": 200,
+                                "body": {
+                                  "value": "@{body('Select_-_Final_-_CEO_Task')}"
+                                }
+                              }
+                            }
+                          }
+                        },
+                        "expression": {
+                          "and": [
+                            {
+                              "equals": [
+                                "@empty(outputs('Get_files_(properties_only)_-_Get_Folder_Name_-_Final_-_CEO_Task')?['body/value'])",
+                                true
+                              ]
+                            },
+                            {
+                              "equals": [
+                                "",
+                                ""
+                              ]
+                            }
+                          ]
+                        },
+                        "type": "If"
+                      }
+                    }
+                  },
+                  "expression": {
+                    "and": [
+                      {
+                        "greater": [
+                          "@triggerBody()?['number_2']",
+                          0
+                        ]
+                      }
+                    ]
+                  },
+                  "type": "If"
+                }
+              },
+              "else": {
+                "actions": {
+                  "Get_files_(properties_only)_-_Get_Folder_Name_-_Working_-_CEO_Task": {
+                    "type": "OpenApiConnection",
+                    "inputs": {
+                      "parameters": {
+                        "dataset": "@parameters('Executive Task Site (tms_ExecutiveTaskSite)')",
+                        "table": "@parameters('Executive Working Y2026 Document Library (tms_ExecutiveWorkingY2026DocumentLibrary)')",
+                        "$filter": "ID_Task eq @{triggerBody()?['number']}"
+                      },
+                      "host": {
+                        "apiId": "/providers/Microsoft.PowerApps/apis/shared_sharepointonline",
+                        "operationId": "GetFileItems",
+                        "connectionName": "shared_sharepointonline-1"
+                      }
+                    }
+                  },
+                  "Condition_-_Is_it_Empty_-_Working_-_CEO_Task": {
+                    "actions": {
+                      "Respond_to_a_Power_App_or_flow_-_Working_2": {
+                        "type": "Response",
+                        "kind": "PowerApp",
+                        "inputs": {
+                          "schema": {
+                            "type": "object",
+                            "properties": {
+                              "value": {
+                                "title": "Value",
+                                "type": "string",
+                                "x-ms-content-hint": "TEXT",
+                                "x-ms-dynamically-added": true
+                              }
+                            },
+                            "additionalProperties": {}
+                          },
+                          "statusCode": 200,
+                          "body": {
+                            "value": "[]"
+                          }
+                        }
+                      }
+                    },
+                    "runAfter": {
+                      "Get_files_(properties_only)_-_Get_Folder_Name_-_Working_-_CEO_Task": [
+                        "Succeeded"
+                      ]
+                    },
+                    "else": {
+                      "actions": {
+                        "Get_files_(properties_only)_-_Files_in_Folder_-_Working_-_CEO_Task": {
+                          "type": "OpenApiConnection",
+                          "inputs": {
+                            "parameters": {
+                              "dataset": "@parameters('Executive Task Site (tms_ExecutiveTaskSite)')",
+                              "table": "@parameters('Executive Working Y2026 Document Library (tms_ExecutiveWorkingY2026DocumentLibrary)')",
+                              "$filter": "FileLeafRef ne 'Response'",
+                              "folderPath": "@{parameters('Document Library Name for Executive Working (tms_DocumentLibraryNameforExecutiveWorking)')}/@{first(outputs('Get_files_(properties_only)_-_Get_Folder_Name_-_Working_-_CEO_Task')?['body/value'])?['{Name}']}"
+                            },
+                            "host": {
+                              "apiId": "/providers/Microsoft.PowerApps/apis/shared_sharepointonline",
+                              "operationId": "GetFileItems",
+                              "connectionName": "shared_sharepointonline-1"
+                            }
+                          }
+                        },
+                        "Select_-_Working_-_CEO_Task": {
+                          "runAfter": {
+                            "Get_files_(properties_only)_-_Files_in_Folder_-_Working_-_CEO_Task": [
+                              "Succeeded"
+                            ]
+                          },
+                          "type": "Select",
+                          "inputs": {
+                            "from": "@outputs('Get_files_(properties_only)_-_Files_in_Folder_-_Working_-_CEO_Task')?['body/value']",
+                            "select": {
+                              "ID": "@item()?['ID']",
+                              "File name with extension": "@{item()?['{FilenameWithExtension}']}",
+                              "Link to item": "@{item()?['{Link}']}",
+                              "File Identifier": "@{item()?['{Identifier}']}",
+                              "Name": "@{item()?['{Name}']}",
+                              "File_Uploaded_By": "@item()?['File_Uploaded_By']",
+                              "Created": "@item()?['Created']",
+                              "Modified": "@item()?['Modified']",
+                              "FullPath": "@{item()?['{FullPath}']}",
+                              "VersionNumber": "@{item()?['{VersionNumber}']}",
+                              "ID_Checklist": "@item()?['ID_Checklist']"
+                            }
+                          }
+                        },
+                        "Respond_to_a_Power_App_or_flow_-_Working_3": {
+                          "runAfter": {
+                            "Select_-_Working_-_CEO_Task": [
+                              "Succeeded"
+                            ]
+                          },
+                          "type": "Response",
+                          "kind": "PowerApp",
+                          "inputs": {
+                            "schema": {
+                              "type": "object",
+                              "properties": {
+                                "value": {
+                                  "title": "Value",
+                                  "type": "string",
+                                  "x-ms-content-hint": "TEXT",
+                                  "x-ms-dynamically-added": true
+                                }
+                              },
+                              "additionalProperties": {}
+                            },
+                            "statusCode": 200,
+                            "body": {
+                              "value": "@{body('Select_-_Working_-_CEO_Task')}"
+                            }
+                          }
+                        }
+                      }
+                    },
+                    "expression": {
+                      "and": [
+                        {
+                          "equals": [
+                            "@empty(outputs('Get_files_(properties_only)_-_Get_Folder_Name_-_Working_-_CEO_Task')?['body/value'])",
+                            true
+                          ]
+                        }
+                      ]
+                    },
+                    "type": "If"
+                  }
+                }
+              },
+              "expression": {
+                "or": [
+                  {
+                    "equals": [
+                      "@triggerBody()?['text']",
+                      "done"
+                    ]
+                  }
+                ]
+              },
+              "type": "If"
+            }
+          },
+          "runAfter": {},
+          "else": {
+            "actions": {
+              "Condition_Final_or_Working": {
+                "actions": {
+                  "Condition_Viewed_By_User_Level_Greater_Than_2": {
+                    "actions": {
+                      "Get_files_(properties_only)_-_Get_Folder_Name_-_Final_-_Level_Greater_Than_2": {
+                        "type": "OpenApiConnection",
+                        "inputs": {
+                          "parameters": {
+                            "dataset": "@parameters('Task Management Site (tms_TaskManagementSite)')",
+                            "table": "@parameters('Final Y2026 Document Library (tms_FinalY2026)')",
+                            "$filter": "ID_Task eq @{triggerBody()?['number']}",
+                            "folderPath": "/@{parameters('Document Library Name for Final (tms_DocumentLibraryNameforFinalY2026)')}/Service Account"
+                          },
+                          "host": {
+                            "apiId": "/providers/Microsoft.PowerApps/apis/shared_sharepointonline",
+                            "operationId": "GetFileItems",
+                            "connectionName": "shared_sharepointonline-1"
+                          }
+                        }
+                      },
+                      "Condition_-_Don't_Have_Folder_1": {
+                        "actions": {
+                          "Respond_to_a_Power_App_or_flow_-_Final_4": {
+                            "type": "Response",
+                            "kind": "PowerApp",
+                            "inputs": {
+                              "schema": {
+                                "type": "object",
+                                "properties": {
+                                  "value": {
+                                    "title": "Value",
+                                    "type": "string",
+                                    "x-ms-content-hint": "TEXT",
+                                    "x-ms-dynamically-added": true
+                                  }
+                                },
+                                "additionalProperties": {}
+                              },
+                              "statusCode": 200,
+                              "body": {
+                                "value": "[]"
+                              }
+                            }
+                          }
+                        },
+                        "runAfter": {
+                          "Get_files_(properties_only)_-_Get_Folder_Name_-_Final_-_Level_Greater_Than_2": [
+                            "Succeeded"
+                          ]
+                        },
+                        "else": {
+                          "actions": {
+                            "Get_files_(properties_only)_-_Files_in_Folder_-_Final_-_Level_Greater_Than_2": {
+                              "type": "OpenApiConnection",
+                              "inputs": {
+                                "parameters": {
+                                  "dataset": "@parameters('Task Management Site (tms_TaskManagementSite)')",
+                                  "table": "@parameters('Final Y2026 Document Library (tms_FinalY2026)')",
+                                  "folderPath": "@{parameters('Document Library Name for Final (tms_DocumentLibraryNameforFinalY2026)')}/Service Account/@{first(outputs('Get_files_(properties_only)_-_Get_Folder_Name_-_Final_-_Level_Greater_Than_2')?['body/value'])?['{Name}']}"
+                                },
+                                "host": {
+                                  "apiId": "/providers/Microsoft.PowerApps/apis/shared_sharepointonline",
+                                  "operationId": "GetFileItems",
+                                  "connectionName": "shared_sharepointonline-1"
+                                }
+                              }
+                            },
+                            "Select_-_Final_-_Level_Greater_Than_2": {
+                              "runAfter": {
+                                "Get_files_(properties_only)_-_Files_in_Folder_-_Final_-_Level_Greater_Than_2": [
+                                  "Succeeded"
+                                ]
+                              },
+                              "type": "Select",
+                              "inputs": {
+                                "from": "@outputs('Get_files_(properties_only)_-_Files_in_Folder_-_Final_-_Level_Greater_Than_2')?['body/value']",
+                                "select": {
+                                  "ID": "@item()?['ID']",
+                                  "File name with extension": "@{item()?['{FilenameWithExtension}']}",
+                                  "Link to item": "@{item()?['{Link}']}",
+                                  "File Identifier": "@{item()?['{Identifier}']}",
+                                  "Name": "@{item()?['{Name}']}",
+                                  "File_Uploaded_By": "@item()?['File_Uploaded_By']",
+                                  "Created": "@item()?['Created']",
+                                  "Modified": "@item()?['Modified']",
+                                  "FullPath": "@{item()?['{FullPath}']}",
+                                  "VersionNumber": "@{item()?['{VersionNumber}']}",
+                                  "ID_Checklist": "@item()?['ID_Checklist/Id']"
+                                }
+                              }
+                            },
+                            "Respond_to_a_Power_App_or_flow_-_Final_5": {
+                              "runAfter": {
+                                "Select_-_Final_-_Level_Greater_Than_2": [
+                                  "Succeeded"
+                                ]
+                              },
+                              "type": "Response",
+                              "kind": "PowerApp",
+                              "inputs": {
+                                "schema": {
+                                  "type": "object",
+                                  "properties": {
+                                    "value": {
+                                      "title": "Value",
+                                      "type": "string",
+                                      "x-ms-content-hint": "TEXT",
+                                      "x-ms-dynamically-added": true
+                                    }
+                                  },
+                                  "additionalProperties": {}
+                                },
+                                "statusCode": 200,
+                                "body": {
+                                  "value": "@{body('Select_-_Final_-_Level_Greater_Than_2')}"
+                                }
+                              }
+                            }
+                          }
+                        },
+                        "expression": {
+                          "and": [
+                            {
+                              "equals": [
+                                "@empty(outputs('Get_files_(properties_only)_-_Get_Folder_Name_-_Final_-_Level_Greater_Than_2')?['body/value'])",
+                                true
+                              ]
+                            }
+                          ]
+                        },
+                        "type": "If"
+                      }
+                    },
+                    "else": {
+                      "actions": {
+                        "Get_files_(properties_only)_-_Get_Folder_Name_-_Final": {
+                          "type": "OpenApiConnection",
+                          "inputs": {
+                            "parameters": {
+                              "dataset": "@parameters('Task Management Site (tms_TaskManagementSite)')",
+                              "table": "@parameters('Final Y2026 Document Library (tms_FinalY2026)')",
+                              "$filter": "ID_Task eq @{triggerBody()?['number']}",
+                              "folderPath": "/@{parameters('Document Library Name for Final (tms_DocumentLibraryNameforFinalY2026)')}/@{triggerBody()?['text_1']}"
+                            },
+                            "host": {
+                              "apiId": "/providers/Microsoft.PowerApps/apis/shared_sharepointonline",
+                              "operationId": "GetFileItems",
+                              "connectionName": "shared_sharepointonline-1"
+                            }
+                          }
+                        },
+                        "Condition_-_Don't_Have_Folder": {
+                          "actions": {
+                            "Respond_to_a_Power_App_or_flow_-_Final_1": {
+                              "type": "Response",
+                              "kind": "PowerApp",
+                              "inputs": {
+                                "schema": {
+                                  "type": "object",
+                                  "properties": {
+                                    "value": {
+                                      "title": "Value",
+                                      "type": "string",
+                                      "x-ms-content-hint": "TEXT",
+                                      "x-ms-dynamically-added": true
+                                    }
+                                  },
+                                  "additionalProperties": {}
+                                },
+                                "statusCode": 200,
+                                "body": {
+                                  "value": "[]"
+                                }
+                              }
+                            }
+                          },
+                          "runAfter": {
+                            "Get_files_(properties_only)_-_Get_Folder_Name_-_Final": [
+                              "Succeeded"
+                            ]
+                          },
+                          "else": {
+                            "actions": {
+                              "Get_files_(properties_only)_-_Files_in_Folder_-_Final": {
+                                "type": "OpenApiConnection",
+                                "inputs": {
+                                  "parameters": {
+                                    "dataset": "@parameters('Task Management Site (tms_TaskManagementSite)')",
+                                    "table": "@parameters('Final Y2026 Document Library (tms_FinalY2026)')",
+                                    "folderPath": "@{parameters('Document Library Name for Final (tms_DocumentLibraryNameforFinalY2026)')}/@{triggerBody()?['text_1']}/@{first(outputs('Get_files_(properties_only)_-_Get_Folder_Name_-_Final')?['body/value'])?['{Name}']}"
+                                  },
+                                  "host": {
+                                    "apiId": "/providers/Microsoft.PowerApps/apis/shared_sharepointonline",
+                                    "operationId": "GetFileItems",
+                                    "connectionName": "shared_sharepointonline-1"
+                                  }
+                                }
+                              },
+                              "Select_-_Final": {
+                                "runAfter": {
+                                  "Get_files_(properties_only)_-_Files_in_Folder_-_Final": [
+                                    "Succeeded"
+                                  ]
+                                },
+                                "type": "Select",
+                                "inputs": {
+                                  "from": "@outputs('Get_files_(properties_only)_-_Files_in_Folder_-_Final')?['body/value']",
+                                  "select": {
+                                    "ID": "@item()?['ID']",
+                                    "File name with extension": "@{item()?['{FilenameWithExtension}']}",
+                                    "Link to item": "@{item()?['{Link}']}",
+                                    "File Identifier": "@{item()?['{Identifier}']}",
+                                    "Name": "@{item()?['{Name}']}",
+                                    "File_Uploaded_By": "@item()?['File_Uploaded_By']",
+                                    "Created": "@item()?['Created']",
+                                    "Modified": "@item()?['Modified']",
+                                    "FullPath": "@{item()?['{FullPath}']}",
+                                    "VersionNumber": "@{item()?['{VersionNumber}']}",
+                                    "ID_Checklist": "@item()?['ID_Checklist/Id']"
+                                  }
+                                }
+                              },
+                              "Respond_to_a_Power_App_or_flow_-_Final": {
+                                "runAfter": {
+                                  "Select_-_Final": [
+                                    "Succeeded"
+                                  ]
+                                },
+                                "type": "Response",
+                                "kind": "PowerApp",
+                                "inputs": {
+                                  "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                      "value": {
+                                        "title": "Value",
+                                        "type": "string",
+                                        "x-ms-content-hint": "TEXT",
+                                        "x-ms-dynamically-added": true
+                                      }
+                                    },
+                                    "additionalProperties": {}
+                                  },
+                                  "statusCode": 200,
+                                  "body": {
+                                    "value": "@{body('Select_-_Final')}"
+                                  }
+                                }
+                              }
+                            }
+                          },
+                          "expression": {
+                            "and": [
+                              {
+                                "equals": [
+                                  "@empty(outputs('Get_files_(properties_only)_-_Get_Folder_Name_-_Final')?['body/value'])",
+                                  true
+                                ]
+                              }
+                            ]
+                          },
+                          "type": "If"
+                        }
+                      }
+                    },
+                    "expression": {
+                      "and": [
+                        {
+                          "greater": [
+                            "@triggerBody()?['number_2']",
+                            0
+                          ]
+                        }
+                      ]
+                    },
+                    "type": "If"
+                  }
+                },
+                "else": {
+                  "actions": {
+                    "Get_files_(properties_only)_-_Get_Folder_Name_-_Working": {
+                      "type": "OpenApiConnection",
+                      "inputs": {
+                        "parameters": {
+                          "dataset": "@parameters('Task Management Site (tms_TaskManagementSite)')",
+                          "table": "@parameters('Working Y2026 Document Library (tms_WorkingY2026DocumentLibrary)')",
+                          "$filter": "ID_Task eq @{triggerBody()?['number']}"
+                        },
+                        "host": {
+                          "apiId": "/providers/Microsoft.PowerApps/apis/shared_sharepointonline",
+                          "operationId": "GetFileItems",
+                          "connectionName": "shared_sharepointonline-1"
+                        }
+                      }
+                    },
+                    "Condition_-_Is_it_Empty": {
+                      "actions": {
+                        "Respond_to_a_Power_App_or_flow_-_Working_1": {
+                          "type": "Response",
+                          "kind": "PowerApp",
+                          "inputs": {
+                            "schema": {
+                              "type": "object",
+                              "properties": {
+                                "value": {
+                                  "title": "Value",
+                                  "type": "string",
+                                  "x-ms-content-hint": "TEXT",
+                                  "x-ms-dynamically-added": true
+                                }
+                              },
+                              "additionalProperties": {}
+                            },
+                            "statusCode": 200,
+                            "body": {
+                              "value": "[]"
+                            }
+                          }
+                        }
+                      },
+                      "runAfter": {
+                        "Get_files_(properties_only)_-_Get_Folder_Name_-_Working": [
+                          "Succeeded"
+                        ]
+                      },
+                      "else": {
+                        "actions": {
+                          "Get_files_(properties_only)_-_Files_in_Folder_-_Working": {
+                            "type": "OpenApiConnection",
+                            "inputs": {
+                              "parameters": {
+                                "dataset": "@parameters('Task Management Site (tms_TaskManagementSite)')",
+                                "table": "@parameters('Working Y2026 Document Library (tms_WorkingY2026DocumentLibrary)')",
+                                "$filter": "FileLeafRef ne 'Response'",
+                                "folderPath": "@{parameters('Document Library Name for Working (tms_DocumentLibraryNameforWorking)')}/@{first(outputs('Get_files_(properties_only)_-_Get_Folder_Name_-_Working')?['body/value'])?['{Name}']}"
+                              },
+                              "host": {
+                                "apiId": "/providers/Microsoft.PowerApps/apis/shared_sharepointonline",
+                                "operationId": "GetFileItems",
+                                "connectionName": "shared_sharepointonline-1"
+                              }
+                            }
+                          },
+                          "Select_-_Working": {
+                            "runAfter": {
+                              "Get_files_(properties_only)_-_Files_in_Folder_-_Working": [
+                                "Succeeded"
+                              ]
+                            },
+                            "type": "Select",
+                            "inputs": {
+                              "from": "@outputs('Get_files_(properties_only)_-_Files_in_Folder_-_Working')?['body/value']",
+                              "select": {
+                                "ID": "@item()?['ID']",
+                                "File name with extension": "@{item()?['{FilenameWithExtension}']}",
+                                "Link to item": "@{item()?['{Link}']}",
+                                "File Identifier": "@{item()?['{Identifier}']}",
+                                "Name": "@{item()?['{Name}']}",
+                                "File_Uploaded_By": "@item()?['File_Uploaded_By']",
+                                "Created": "@item()?['Created']",
+                                "Modified": "@item()?['Modified']",
+                                "FullPath": "@{item()?['{FullPath}']}",
+                                "VersionNumber": "@{item()?['{VersionNumber}']}",
+                                "ID_Checklist": "@item()?['ID_Checklist/Id']"
+                              }
+                            }
+                          },
+                          "Respond_to_a_Power_App_or_flow_-_Working": {
+                            "runAfter": {
+                              "Select_-_Working": [
+                                "Succeeded"
+                              ]
+                            },
+                            "type": "Response",
+                            "kind": "PowerApp",
+                            "inputs": {
+                              "schema": {
+                                "type": "object",
+                                "properties": {
+                                  "value": {
+                                    "title": "Value",
+                                    "type": "string",
+                                    "x-ms-content-hint": "TEXT",
+                                    "x-ms-dynamically-added": true
+                                  }
+                                },
+                                "additionalProperties": {}
+                              },
+                              "statusCode": 200,
+                              "body": {
+                                "value": "@{body('Select_-_Working')}"
+                              }
+                            }
+                          }
+                        }
+                      },
+                      "expression": {
+                        "and": [
+                          {
+                            "equals": [
+                              "@empty(outputs('Get_files_(properties_only)_-_Get_Folder_Name_-_Working')?['body/value'])",
+                              true
+                            ]
+                          }
+                        ]
+                      },
+                      "type": "If"
+                    }
+                  }
+                },
+                "expression": {
+                  "or": [
+                    {
+                      "equals": [
+                        "@triggerBody()?['text']",
+                        "done"
+                      ]
+                    }
+                  ]
+                },
+                "type": "If"
+              }
+            }
+          },
+          "expression": {
+            "and": [
+              {
+                "equals": [
+                  "@triggerBody()?['number_1']",
+                  4
+                ]
+              }
+            ]
+          },
+          "type": "If"
+        }
+      }
+    },
+    "templateName": null
+  },
+  "schemaVersion": "1.0.0.0"
+}
